@@ -1,926 +1,1019 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-    <title>КОТО-РИЛС · оптимизация для ноутбуков</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        body {
-            background: #1a1727;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
-        }
-        .cat-reels-app {
-            width: 100%;
-            max-width: 460px;
-            height: min(820px, 95vh);
-            background: #0b0914;
-            border-radius: 48px 48px 28px 28px;
-            overflow: hidden;
-            box-shadow: 0 30px 60px #000000cc, 0 0 0 2px #4e3991 inset;
-            display: flex;
-            flex-direction: column;
-            transition: max-width 0.2s;
-        }
-        /* Оптимизация для ноутбуков и больших экранов */
-        @media (min-width: 1000px) {
-            .cat-reels-app {
-                max-width: 700px;
-                height: 900px;
-            }
-            .logo { font-size: 1.8rem; }
-            .counter { font-size: 1rem; padding: 8px 24px; }
-            .name { font-size: 1.6rem; }
-            .origin { font-size: 1rem; }
-            .like-btn { font-size: 1.3rem; padding: 14px 32px; }
-            .action-btn { font-size: 1.2rem; padding: 14px 28px; }
-            .url-input { font-size: 1.1rem; padding: 16px 22px; }
-            .icon-btn { width: 64px; height: 64px; font-size: 32px; }
-            .avatar { width: 64px; height: 64px; font-size: 40px; }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>КОТО-РИЛС </title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Onest:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08060f;--surface:#0f0d1c;--surface2:#181530;
+  --border:rgba(180,130,255,.15);--border2:rgba(180,130,255,.32);
+  --accent:#b87fff;--accent2:#ff7eb3;--text:#f0e8ff;--dim:#9984c8;
+  --font:'Onest',system-ui,sans-serif;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+button{border:none;background:none;color:inherit;font:inherit;cursor:pointer}
+input{border:none;background:none;color:inherit;font:inherit;outline:none}
 
-        .header {
-            padding: 18px 20px 8px;
-            display: flex;
-            justify-content: space-between;
-            background: #0f0d1c;
-            border-bottom: 1px solid #342d4a;
-        }
-        .logo {
-            font-weight: 800;
-            font-size: 1.5rem;
-            background: linear-gradient(145deg, #ffd6a8, #d6b1ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .counter {
-            background: #282041;
-            padding: 6px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            color: #eee3ff;
-            border: 1px solid #9577d9;
-        }
+/* ═══ SHELL ═══ */
+.app{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
 
-        .content-scroll {
-            flex: 1;
-            overflow-y: auto;
-            scrollbar-width: none;
-            background: #0a0815;
-        }
-        .content-scroll::-webkit-scrollbar { display: none; }
+/* ═══ DESKTOP ≥ 900px ═══ */
+@media(min-width:900px){
+  .app{flex-direction:row}
+  .sidebar{display:flex!important;flex-direction:column;width:240px;min-width:240px;height:100%;background:var(--surface);border-right:1px solid var(--border);padding:28px 14px 24px;gap:4px;flex-shrink:0}
+  .sidebar-logo{font-family:'Unbounded',sans-serif;font-size:1.15rem;font-weight:900;background:linear-gradient(120deg,#ffd6a8,#c97bff,#7ed4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:8px 12px 20px}
+  .sidebar .snav{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:14px;font-weight:600;font-size:.95rem;color:var(--dim);cursor:pointer;transition:background .15s,color .15s;width:100%}
+  .sidebar .snav:hover{background:var(--surface2);color:var(--text)}
+  .sidebar .snav.active{background:var(--surface2);color:var(--text);font-weight:700}
+  .sidebar .snav-icon{font-size:1.4rem;width:26px;text-align:center}
+  .sidebar-spacer{flex:1}
+  .sidebar-upload{display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+  .sidebar-url{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:11px 14px;font-size:.85rem;color:var(--text);width:100%}
+  .sidebar-url::placeholder{color:var(--dim)}
+  .sidebar-btn-row{display:flex;gap:8px}
+  .sidebar-icon-btn{flex:1;height:42px;background:#6c4bc2;border-radius:10px;font-size:1.1rem;color:white;box-shadow:0 4px 0 #3d2d66;transition:transform .08s,box-shadow .08s}
+  .sidebar-icon-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #3d2d66}
+  .sidebar-counter-badge{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:7px 12px;font-size:.82rem;font-weight:700;color:var(--accent);text-align:center;margin-bottom:6px}
+  .main-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+  .topbar{display:none!important}
+  .bottom-nav{display:none!important}
+  .upload-bar{display:none!important}
+}
 
-        .feed {
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-        }
-        .reel {
-            height: 100%;
-            scroll-snap-align: start;
-            position: relative;
-            background: #0e0c1a;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-        .media-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .media-container img, .media-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .media-fallback {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #1a1440;
-            color: #dbbaff;
-            font-size: 2rem;
-            text-align: center;
-            padding: 20px;
-        }
-        .media-fallback span {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-        .gradient {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            background: linear-gradient(transparent, #000000e0);
-            pointer-events: none;
-            z-index: 2;
-        }
-        .reel-footer {
-            position: relative;
-            z-index: 3;
-            padding: 20px 20px 40px;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            pointer-events: none;
-        }
-        .cat-details {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            pointer-events: auto;
-        }
-        .avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #af88eb, #e1aac9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            border: 2px solid #ffffffd0;
-        }
-        .name {
-            font-weight: 800;
-            font-size: 1.4rem;
-            text-shadow: 0 2px 8px black;
-        }
-        .origin {
-            color: #cfb9ff;
-            font-size: 0.9rem;
-        }
-        .actions {
-            display: flex;
-            gap: 18px;
-            pointer-events: auto;
-        }
-        .like-btn {
-            background: rgba(20, 15, 35, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1.5px solid #a17cff;
-            border-radius: 60px;
-            padding: 12px 28px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 6px 14px black;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .like-btn.liked {
-            background: #301f30;
-            border-color: #ff94c8;
-            color: #ffcef0;
-        }
-        .like-btn:active { transform: scale(0.94); }
-        .action-btn {
-            background: rgba(20, 15, 35, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1.5px solid #5f4d8a;
-            border-radius: 60px;
-            padding: 12px 24px;
-            color: white;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
+/* ═══ TOPBAR ═══ */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.2rem;background:linear-gradient(120deg,#ffd6a8,#c97bff,#7ed4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar-counter{background:var(--surface2);border:1px solid var(--border2);border-radius:40px;padding:5px 14px;font-size:.8rem;font-weight:700;color:var(--accent)}
+.sidebar{display:none}
+.main-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.content-area{flex:1;overflow:hidden;min-height:0}
 
-        .loading-indicator {
-            text-align: center;
-            padding: 30px;
-            color: #b19bff;
-            font-weight: 600;
-            font-size: 1.2rem;
-            scroll-snap-align: start;
-            background: #0b0818;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-        }
-        .spinner {
-            width: 28px;
-            height: 28px;
-            border: 4px solid #a081d9;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+/* ═══ FEED ═══ */
+.feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.feed::-webkit-scrollbar{display:none}
+.reel{height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;background:#000;display:flex;flex-direction:column;justify-content:flex-end;flex-shrink:0}
+.media-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
+.media-wrap img,.media-wrap video{width:100%;height:100%;object-fit:cover}
+.media-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#12103a;gap:10px;color:var(--accent)}
+.media-fallback .fi{font-size:3.5rem}
+.grad{position:absolute;bottom:0;left:0;right:0;height:58%;background:linear-gradient(to top,rgba(0,0,0,.93),transparent);pointer-events:none;z-index:2}
 
-        .upload-bar {
-            background: #141025;
-            border-top: 2px solid #5b4591;
-            padding: 16px 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .url-input {
-            flex: 3 1 200px;
-            background: #262035;
-            border: 1px solid #7c5fd1;
-            border-radius: 60px;
-            padding: 14px 20px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-        }
-        .url-input::placeholder { color: #ab96da; }
-        .icon-btn {
-            background: #6c4bc2;
-            border: none;
-            width: 56px;
-            height: 56px;
-            border-radius: 56px;
-            font-size: 28px;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 0 #3d2d66;
-            cursor: pointer;
-            transition: 0.07s linear;
-            flex: 0 0 auto;
-        }
-        .icon-btn:active {
-            transform: translateY(5px);
-            box-shadow: 0 1px 0 #3d2d66;
-        }
-        #fileInput { display: none; }
+/* ═══ MUSIC VISUALIZER BAR ═══ */
+.viz-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 10;
+  overflow: hidden;
+  background: transparent;
+}
+.viz-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0%;
+  transition: none;
+  box-shadow: 0 0 8px var(--accent);
+}
 
-        .bottom-nav {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            background: #110f1d;
-            border-top: 1px solid #40375f;
-            padding: 10px 20px 16px;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #988fc0;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 6px 22px;
-            border-radius: 40px;
-            transition: 0.1s;
-        }
-        .nav-item.active {
-            background: #2b2348;
-            color: #f0d2ff;
-        }
-        .nav-icon { font-size: 28px; }
+/* ═══ MUSIC TICKER (bottom of reel) ═══ */
+.music-ticker-wrap {
+  position: absolute;
+  bottom: 185px;
+  left: 18px;
+  right: 74px;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+.music-ticker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .78rem;
+  color: rgba(255,255,255,.88);
+  white-space: nowrap;
+}
+.music-disc {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#2a1840,#6c3ba0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.3);
+  animation: discSpin 3s linear infinite;
+  animation-play-state: paused;
+}
+.music-disc.playing { animation-play-state: running; }
+@keyframes discSpin { to { transform: rotate(360deg); } }
+.music-text-scroll {
+  overflow: hidden;
+  flex: 1;
+}
+.music-text-inner {
+  display: inline-block;
+  white-space: nowrap;
+}
+.music-text-inner.scrolling {
+  animation: textScroll 8s linear infinite;
+}
+@keyframes textScroll {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(-50%); }
+  50%  { transform: translateX(-50%); }
+  90%  { transform: translateX(0); }
+  100% { transform: translateX(0); }
+}
 
-        .profile-header {
-            padding: 24px 20px;
-            background: #121020;
-            color: white;
-        }
-        .profile-stats {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-            margin: 16px 0;
-        }
-        .big-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #8e6dd6;
-            font-size: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .stat {
-            text-align: center;
-        }
-        .stat-num {
-            font-size: 26px;
-            font-weight: 800;
-        }
-        .stat-label { color: #bbaaec; }
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #322c4a;
-        }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 16px;
-            font-weight: 700;
-            color: #a18fd2;
-            cursor: pointer;
-        }
-        .tab.active {
-            color: #fad7ff;
-            border-bottom: 4px solid #d0a0ff;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
-            background: #141026;
-            padding: 2px;
-        }
-        .grid-item {
-            aspect-ratio: 1/1;
-            background: #231e37;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-        }
-        .grid-item img, .grid-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .video-badge {
-            position: absolute;
-            bottom: 4px;
-            right: 4px;
-            background: #000000aa;
-            color: white;
-            border-radius: 16px;
-            padding: 2px 8px;
-            font-size: 12px;
-        }
-        .empty-state {
-            grid-column: span 3;
-            text-align: center;
-            padding: 40px;
-            color: #aaa;
-        }
+/* ═══ WAVE VISUALIZER (right side) ═══ */
+.wave-vis {
+  position: absolute;
+  right: 14px;
+  bottom: 360px;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 28px;
+}
+.wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.7);
+  min-height: 3px;
+  transition: height .08s ease;
+}
 
-        .toast {
-            position: fixed; bottom: 100px; left: 20px; right: 20px;
-            background: #1d1832ee; backdrop-filter: blur(20px);
-            border: 2px solid #bb99ff;
-            color: white; text-align: center; padding: 16px;
-            border-radius: 60px; font-weight: 600; z-index: 1000;
-            animation: slide 2s forwards;
-            max-width: 400px; margin: 0 auto;
-        }
-        @keyframes slide {
-            0% { opacity:0; transform:translateY(40px); }
-            15% { opacity:1; transform:translateY(0); }
-            80% { opacity:1; }
-            100% { opacity:0; transform:translateY(-30px); }
-        }
-    </style>
+/* ═══ RIGHT SIDE ACTIONS ═══ */
+.reel-side-actions{position:absolute;right:14px;bottom:110px;display:flex;flex-direction:column;align-items:center;gap:22px;z-index:5}
+.reel-side-btn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.reel-side-icon{font-size:1.8rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));transition:transform .1s}
+.reel-side-btn:active .reel-side-icon{transform:scale(.88)}
+.reel-side-count{font-size:.72rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+
+/* Mute button */
+.mute-btn {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 10;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.mute-btn:active { transform: scale(.9); }
+
+/* ═══ REEL FOOTER ═══ */
+.reel-footer{position:relative;z-index:4;padding:0 70px 28px 18px;display:flex;flex-direction:column;gap:10px}
+.cat-row{display:flex;align-items:center;gap:12px}
+.cat-ava{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#b87fff,#ff7eb3);display:flex;align-items:center;justify-content:center;font-size:1.6rem;border:2px solid rgba(255,255,255,.55);flex-shrink:0}
+.cat-name{font-family:'Unbounded',sans-serif;font-weight:700;font-size:1rem;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+.cat-origin{color:#c5a8ff;font-size:.78rem;margin-top:1px}
+
+.reel-bottom-bar{display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:rgba(8,6,15,.65);backdrop-filter:blur(14px);border:1.5px solid rgba(180,130,255,.3);border-radius:100px;padding:9px 20px;color:var(--text);font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:7px;cursor:pointer;transition:transform .1s;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.pill:active{transform:scale(.92)}
+.pill.liked{background:rgba(60,15,40,.8);border-color:#ff7eb3;color:#ffcef0}
+
+/* ═══ LOADING ═══ */
+.loading-slide{height:100%;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;color:var(--accent);font-weight:700;font-size:1rem;flex-shrink:0}
+.spinner{width:36px;height:36px;border:3px solid rgba(184,127,255,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ UPLOAD BAR ═══ */
+.upload-bar{background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.url-inp{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:100px;padding:11px 16px;font-size:.88rem;color:var(--text);font-family:var(--font)}
+.url-inp::placeholder{color:var(--dim)}
+.icon-btn{width:44px;height:44px;background:#6c4bc2;border-radius:50%;font-size:1.1rem;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #3d2d66;transition:transform .08s,box-shadow .08s;flex-shrink:0}
+.icon-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #3d2d66}
+
+/* ═══ BOTTOM NAV ═══ */
+.bottom-nav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:6px 0 calc(6px + env(safe-area-inset-bottom));flex-shrink:0}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;color:var(--dim);font-size:.72rem;font-weight:600;cursor:pointer;border-radius:14px;transition:color .15s}
+.bnav-btn .bicon{font-size:1.5rem}
+.bnav-btn.active{color:var(--text)}
+
+/* ═══ PROFILE ═══ */
+.profile-wrap{height:100%;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;background:var(--bg)}
+.profile-wrap::-webkit-scrollbar{width:3px}
+.profile-wrap::-webkit-scrollbar-thumb{background:var(--border)}
+.profile-hero{padding:28px 20px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.profile-top{display:flex;align-items:center;gap:22px;margin-bottom:18px}
+.profile-ava{width:80px;height:80px;border-radius:50%;background:linear-gradient(145deg,#8e5fd6,#e06aaa);display:flex;align-items:center;justify-content:center;font-size:2.8rem;border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent);flex-shrink:0}
+.profile-stats{display:flex;gap:28px}
+.p-stat{text-align:center}
+.p-stat-n{font-family:'Unbounded',sans-serif;font-size:1.4rem;font-weight:900;color:var(--text)}
+.p-stat-l{font-size:.78rem;color:var(--dim);margin-top:2px}
+.profile-name{font-family:'Unbounded',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:4px}
+.profile-bio{font-size:.82rem;color:var(--dim);line-height:1.5}
+.p-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
+.p-tab{flex:1;text-align:center;padding:15px;font-weight:700;color:var(--dim);cursor:pointer;border-bottom:2.5px solid transparent;transition:color .15s,border-color .15s}
+.p-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px}
+.p-cell{aspect-ratio:1;background:var(--surface2);overflow:hidden;cursor:pointer;position:relative}
+.p-cell img,.p-cell video{width:100%;height:100%;object-fit:cover;transition:filter .2s}
+.p-cell:hover img,.p-cell:hover video{filter:brightness(.8)}
+.p-cell-fb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:#12103a}
+.vid-badge{position:absolute;bottom:4px;right:6px;font-size:.85rem;background:rgba(0,0,0,.6);border-radius:8px;padding:1px 5px;color:#fff}
+.p-empty{grid-column:span 3;text-align:center;padding:60px 20px;color:var(--dim);font-size:1rem}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(12,10,24,.94);backdrop-filter:blur(14px);border:1.5px solid var(--accent);color:var(--text);padding:10px 24px;border-radius:100px;font-size:.85rem;font-weight:700;z-index:999;white-space:nowrap;animation:tst 2.6s forwards}
+.toast.err{border-color:var(--accent2)}
+@keyframes tst{0%{opacity:0;transform:translateX(-50%) translateY(16px)}14%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-12px)}}
+
+/* ═══ HEART BURST ═══ */
+.heart-burst{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;font-size:5rem;pointer-events:none;opacity:0}
+.heart-burst.pop{animation:hpop .65s forwards}
+@keyframes hpop{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.25)}55%{opacity:1;transform:scale(1)}100%{opacity:0}}
+</style>
 </head>
 <body>
-<div class="cat-reels-app">
-    <div class="header">
-        <span class="logo">🐈 КОТО-РИЛС</span>
-        <span class="counter" id="globalCounter">0 котов</span>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">🐈 КОТО-РИЛС</div>
+    <div class="sidebar-counter-badge" id="sideCounter">0 котов</div>
+    <div class="snav active" data-screen="feed"><span class="snav-icon">🏠</span> Лента</div>
+    <div class="snav" data-screen="profile"><span class="snav-icon">😺</span> Профиль</div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-upload">
+      <input class="sidebar-url" id="sideUrl" placeholder="Ссылка на кота (jpg, mp4)">
+      <div class="sidebar-btn-row">
+        <button class="sidebar-icon-btn" id="sideAdd">➕</button>
+        <button class="sidebar-icon-btn" id="sideFile">📎</button>
+      </div>
     </div>
-    <div class="content-scroll" id="contentArea"></div>
+  </aside>
+
+  <div class="main-col">
+    <div class="topbar">
+      <span class="topbar-logo">🐈 КОТО-РИЛС</span>
+      <span class="topbar-counter" id="topCounter">0 котов</span>
+    </div>
+    <div class="content-area" id="contentArea"></div>
     <div class="upload-bar">
-        <input type="text" class="url-input" id="urlInput" placeholder="Ссылка на кота (jpg, mp4, gif)" value="https://cdn2.thecatapi.com/images/9j5.jpg">
-        <button class="icon-btn" id="addUrlBtn">➕</button>
-        <button class="icon-btn" id="attachBtn">📎</button>
-        <input type="file" id="fileInput" accept="image/*,video/mp4,video/webm">
+      <input class="url-inp" id="urlInp" placeholder="Ссылка на кота (jpg, mp4, gif)">
+      <button class="icon-btn" id="addUrl">➕</button>
+      <button class="icon-btn" id="addFile">📎</button>
     </div>
     <div class="bottom-nav">
-        <div class="nav-item active" id="navFeed">🏠<span>Лента</span></div>
-        <div class="nav-item" id="navProfile">😺<span>Профиль</span></div>
+      <div class="bnav-btn active" data-screen="feed"><span class="bicon">🏠</span><span>Лента</span></div>
+      <div class="bnav-btn" data-screen="profile"><span class="bicon">😺</span><span>Профиль</span></div>
     </div>
+  </div>
 </div>
 
+<input type="file" id="fileInput" accept="image/*,video/mp4,video/webm" style="display:none">
+
 <script>
-    (function() {
-        // ------------------------------------------------------------------
-        // ИСПРАВЛЕННАЯ ВЕРСИЯ: убраны blob-ошибки, улучшена загрузка видео
-        // ------------------------------------------------------------------
-        const CAT_API_IMAGES = 'https://api.thecatapi.com/v1/images/search?mime_types=jpg,png,gif&limit=6';
-        const CAT_API_VIDEOS = 'https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=2';
+'use strict';
+(() => {
 
-        let allCats = [];
-        let myCats = [];
-        let currentScreen = 'feed';
-        let isLoading = false;
-        let hasMore = true;
-        let errorCooldown = false;
+/* ════════════════════════════════════════════════
+   🎵 WEB AUDIO ENGINE
+   Генерирует уникальную lofi-мелодию для каждого кота
+   на основе его ID (детерминированный рандом)
+════════════════════════════════════════════════ */
+const AudioEngine = (() => {
+  let ctx = null;
+  let masterGain = null;
+  let currentNodes = [];
+  let muted = false;
+  let vizCallback = null;
+  let analyser = null;
+  let animFrame = null;
 
-        function loadStorage() {
-            try {
-                const data = JSON.parse(localStorage.getItem('cat_reels_optimized')) || { likedIds: [], myCats: [] };
-                return data;
-            } catch { return { likedIds: [], myCats: [] }; }
+  // Сеяный генератор случайных чисел (чтобы один кот = одна мелодия)
+  function seededRand(seed) {
+    let s = seed;
+    return () => {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+    };
+  }
+
+  function hashStr(str) {
+    let h = 5381;
+    for(let i=0;i<str.length;i++) h=(h*33)^str.charCodeAt(i);
+    return h >>> 0;
+  }
+
+  // Музыкальные гаммы
+  const SCALES = {
+    pentatonic: [0,2,4,7,9],
+    minor:      [0,2,3,5,7,8,10],
+    major:      [0,2,4,5,7,9,11],
+    blues:      [0,3,5,6,7,10],
+    dorian:     [0,2,3,5,7,9,10],
+  };
+  const SCALE_NAMES = Object.keys(SCALES);
+
+  // Частота ноты по MIDI номеру
+  function midiToHz(note) { return 440 * Math.pow(2, (note-69)/12); }
+
+  function ensureCtx() {
+    if(!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = muted ? 0 : 0.55;
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      masterGain.connect(analyser);
+      analyser.connect(ctx.destination);
+    }
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function stopAll() {
+    cancelAnimationFrame(animFrame);
+    currentNodes.forEach(n => { try { n.stop && n.stop(); n.disconnect && n.disconnect(); } catch {} });
+    currentNodes = [];
+    vizCallback = null;
+  }
+
+  // ── Создаём LP-фильтр (lofi эффект) ──
+  function makeLofiChain(output) {
+    const ac = ensureCtx();
+    // Lowpass filter — срезаем верха (lofi звучание)
+    const lpf = ac.createBiquadFilter();
+    lpf.type = 'lowpass'; lpf.frequency.value = 2200; lpf.Q.value = 0.7;
+    // Небольшой реверб через ConvolverNode (простой)
+    const wet = ac.createGain(); wet.gain.value = 0.18;
+    const dry = ac.createGain(); dry.gain.value = 0.82;
+    lpf.connect(dry); dry.connect(output);
+    lpf.connect(wet); wet.connect(output);
+    return lpf; // входная точка цепочки
+  }
+
+  // ── Генерируем мягкий шум (vinyl crackle) ──
+  function makeVinylNoise(output, rng) {
+    const ac = ensureCtx();
+    const bufSize = ac.sampleRate * 2;
+    const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) data[i] = (rng()-0.5)*0.015;
+    const src = ac.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const g = ac.createGain(); g.gain.value = 0.06;
+    src.connect(g); g.connect(output);
+    src.start();
+    currentNodes.push(src, g);
+  }
+
+  // ── Бас-линия ──
+  function makeBass(rootHz, scale, bpm, output, rng) {
+    const ac = ensureCtx();
+    const beatSec = 60/bpm;
+    const bassNotes = [0,0,scale[2]||3, scale[4]||7];
+
+    function schedBeat(time) {
+      const note = bassNotes[Math.floor(rng()*bassNotes.length)];
+      const freq = rootHz * Math.pow(2, note/12) / 2; // октавой ниже
+
+      const osc = ac.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, time);
+
+      const env = ac.createGain();
+      env.gain.setValueAtTime(0, time);
+      env.gain.linearRampToValueAtTime(0.28, time+0.02);
+      env.gain.exponentialRampToValueAtTime(0.001, time+beatSec*0.9);
+
+      const lpf = ac.createBiquadFilter();
+      lpf.type='lowpass'; lpf.frequency.value=400;
+
+      osc.connect(lpf); lpf.connect(env); env.connect(output);
+      osc.start(time); osc.stop(time+beatSec);
+      currentNodes.push(osc,env,lpf);
+    }
+
+    let nextBeat = ac.currentTime + 0.1;
+    function scheduler() {
+      while(nextBeat < ac.currentTime + 0.3) {
+        schedBeat(nextBeat);
+        nextBeat += beatSec * (rng()>0.7 ? 2 : 1);
+      }
+    }
+    const tid = setInterval(scheduler, 100);
+    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+  }
+
+  // ── Мелодия (синтезатор) ──
+  function makeMelody(rootHz, scale, bpm, output, rng) {
+    const ac = ensureCtx();
+    const beatSec = 60/bpm;
+    // Паттерн: 16 ступеней
+    const pattern = Array.from({length:16}, (_,i) => {
+      if(rng() < 0.3) return null; // пауза
+      const step = scale[Math.floor(rng()*scale.length)];
+      const octave = rng() > 0.7 ? 12 : 0;
+      return step + octave;
+    });
+
+    let step = 0;
+    function schedNote(time) {
+      const note = pattern[step % pattern.length];
+      step++;
+      if(note === null) return;
+
+      const freq = rootHz * Math.pow(2, note/12);
+      const osc = ac.createOscillator();
+      // Разные тембры для разнообразия
+      const waveTypes = ['sine','triangle','sine'];
+      osc.type = waveTypes[Math.floor(rng()*waveTypes.length)];
+      osc.frequency.setValueAtTime(freq, time);
+      // Лёгкое вибрато
+      const vibLfo = ac.createOscillator();
+      vibLfo.frequency.value = 4.5 + rng()*2;
+      const vibGain = ac.createGain(); vibGain.gain.value = freq*0.005;
+      vibLfo.connect(vibGain); vibGain.connect(osc.frequency);
+      vibLfo.start(time);
+
+      const env = ac.createGain();
+      const dur = beatSec * 0.5;
+      env.gain.setValueAtTime(0, time);
+      env.gain.linearRampToValueAtTime(0.22, time+0.03);
+      env.gain.exponentialRampToValueAtTime(0.001, time+dur);
+
+      osc.connect(env); env.connect(output);
+      osc.start(time); osc.stop(time+dur+0.05);
+      vibLfo.stop(time+dur+0.05);
+      currentNodes.push(osc,vibLfo,vibGain,env);
+    }
+
+    const stepSec = beatSec * 0.5;
+    let nextStep = ac.currentTime + 0.1;
+    function scheduler() {
+      while(nextStep < ac.currentTime + 0.4) {
+        schedNote(nextStep);
+        nextStep += stepSec;
+      }
+    }
+    const tid = setInterval(scheduler, 100);
+    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+  }
+
+  // ── Аккорды (пэд) ──
+  function makePad(rootHz, scale, bpm, output, rng) {
+    const ac = ensureCtx();
+    const chordDur = (60/bpm) * 4;
+    const chordSteps = [
+      [0, scale[2]||3, scale[4]||7],
+      [scale[1]||2, scale[3]||5, scale[5]||9],
+      [scale[2]||3, scale[4]||7, scale[6]||11],
+      [0, scale[2]||3, scale[4]||7],
+    ];
+    let chordIdx = Math.floor(rng()*chordSteps.length);
+
+    function schedChord(time) {
+      const steps = chordSteps[chordIdx % chordSteps.length];
+      chordIdx++;
+      steps.forEach(step => {
+        const osc = ac.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = rootHz * Math.pow(2, step/12);
+        const env = ac.createGain();
+        env.gain.setValueAtTime(0, time);
+        env.gain.linearRampToValueAtTime(0.07, time+0.4);
+        env.gain.setValueAtTime(0.07, time+chordDur-0.5);
+        env.gain.linearRampToValueAtTime(0, time+chordDur);
+        osc.connect(env); env.connect(output);
+        osc.start(time); osc.stop(time+chordDur+0.1);
+        currentNodes.push(osc,env);
+      });
+    }
+
+    let nextChord = ac.currentTime + 0.05;
+    function scheduler() {
+      while(nextChord < ac.currentTime + 0.5) {
+        schedChord(nextChord);
+        nextChord += chordDur;
+      }
+    }
+    const tid = setInterval(scheduler, 200);
+    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+  }
+
+  // ── Барабаны (hi-hat + kick) ──
+  function makeDrums(bpm, output, rng) {
+    const ac = ensureCtx();
+    const beatSec = 60/bpm;
+
+    function makeKick(time) {
+      const osc = ac.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, time);
+      osc.frequency.exponentialRampToValueAtTime(40, time+0.15);
+      const env = ac.createGain();
+      env.gain.setValueAtTime(0.35, time);
+      env.gain.exponentialRampToValueAtTime(0.001, time+0.18);
+      osc.connect(env); env.connect(output);
+      osc.start(time); osc.stop(time+0.2);
+      currentNodes.push(osc,env);
+    }
+
+    function makeHat(time, loud=false) {
+      const bufSize = Math.floor(ac.sampleRate * 0.06);
+      const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for(let i=0;i<bufSize;i++) d[i]=(Math.random()-0.5)*2;
+      const src = ac.createBufferSource(); src.buffer=buf;
+      const hpf = ac.createBiquadFilter(); hpf.type='highpass'; hpf.frequency.value=7000;
+      const env = ac.createGain();
+      env.gain.setValueAtTime(loud?0.12:0.06, time);
+      env.gain.exponentialRampToValueAtTime(0.001, time+0.05);
+      src.connect(hpf); hpf.connect(env); env.connect(output);
+      src.start(time); src.stop(time+0.07);
+      currentNodes.push(src,hpf,env);
+    }
+
+    let beat=0, nextTime=ac.currentTime+0.1;
+    function scheduler() {
+      while(nextTime < ac.currentTime+0.35) {
+        const b = beat%8;
+        if(b===0||b===4) makeKick(nextTime);
+        // hi-hat на каждую восьмую с вероятностью
+        if(rng()>0.2) makeHat(nextTime, b%2===0);
+        nextTime += beatSec*0.5;
+        beat++;
+      }
+    }
+    const tid=setInterval(scheduler, 100);
+    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+  }
+
+  // ── Визуализатор (анализ спектра) ──
+  function startVisualizer(cb) {
+    if(!analyser) return;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    vizCallback = cb;
+    function loop() {
+      animFrame = requestAnimationFrame(loop);
+      analyser.getByteFrequencyData(data);
+      if(vizCallback) vizCallback(data);
+    }
+    loop();
+  }
+
+  // ── Главная функция: играть музыку для кота ──
+  function playCat(catId, onVizUpdate) {
+    stopAll();
+    ensureCtx();
+
+    const rng = seededRand(hashStr(catId));
+
+    // Параметры трека на основе ID
+    const ROOTS = [261.63, 293.66, 311.13, 329.63, 349.23, 392.00, 415.30, 440.00];
+    const rootHz = ROOTS[Math.floor(rng()*ROOTS.length)];
+    const scaleName = SCALE_NAMES[Math.floor(rng()*SCALE_NAMES.length)];
+    const scale = SCALES[scaleName];
+    const bpm = 70 + Math.floor(rng()*25); // 70–95 BPM (lofi темп)
+
+    const chain = makeLofiChain(masterGain);
+
+    makePad(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'pad')));
+    makeBass(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'bass')));
+    makeMelody(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'mel')));
+    makeDrums(bpm, chain, seededRand(hashStr(catId+'drum')));
+    makeVinylNoise(chain, seededRand(hashStr(catId+'noise')));
+
+    // Генерируем название трека
+    const ADJECTIVES = ['Сонный','Мурлычащий','Ночной','Тёплый','Пушистый','Ленивый','Уютный','Мечтательный'];
+    const NOUNS = ['кот FM','lofi beats','purr radio','мяу tape','нян-нян wave','котовасия'];
+    const rng2 = seededRand(hashStr(catId+'name'));
+    const trackName = ADJECTIVES[Math.floor(rng2()*ADJECTIVES.length)] + ' ' + NOUNS[Math.floor(rng2()*NOUNS.length)];
+
+    if(onVizUpdate) startVisualizer(onVizUpdate);
+
+    return { trackName, bpm, scale: scaleName };
+  }
+
+  function setMute(val) {
+    muted = val;
+    if(masterGain) masterGain.gain.setTargetAtTime(muted?0:0.55, ensureCtx().currentTime, 0.05);
+  }
+  function getMuted() { return muted; }
+  function stop() { stopAll(); cancelAnimationFrame(animFrame); }
+
+  return { playCat, setMute, getMuted, stop };
+})();
+
+
+/* ════════════════════════════════════════════════
+   APP STATE & HELPERS
+════════════════════════════════════════════════ */
+const API_IMG = 'https://api.thecatapi.com/v1/images/search?mime_types=jpg,png&limit=8';
+const API_VID = 'https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=2';
+const NAMES   = ['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
+const AVATARS = ['🐈','😸','😻','😽','😼','🙀','😿','😾'];
+const CAPTIONS= ['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? Где я? 👁️'];
+
+let allCats=[], myCats=[];
+let screen='feed';
+let loading=false, cooldown=false;
+let currentCatId=null;
+
+const vidObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=> e.isIntersecting ? e.target.play().catch(()=>{}) : e.target.pause());
+},{ threshold:0.55 });
+
+// Reel visibility observer (музыка по текущему риилу)
+let reelObs = null;
+
+function load(){ try{return JSON.parse(localStorage.getItem('kotoreels_v5'))||{liked:[],my:[]}}catch{return{liked:[],my:[]}} }
+function save(){
+  try{ localStorage.setItem('kotoreels_v5', JSON.stringify({
+    liked: allCats.filter(c=>c.liked).map(c=>c.id),
+    my: myCats.filter(c=>!c.url.startsWith('blob:')),
+  }))}catch{}
+}
+const stored=load();
+
+const $=id=>document.getElementById(id);
+function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
+function plural(n){ const m10=n%10,m100=n%100; if(m10===1&&m100!==11)return`${n} кот`; if([2,3,4].includes(m10)&&![12,13,14].includes(m100))return`${n} кота`; return`${n} котов` }
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+function toast(msg,err=false){ const t=document.createElement('div'); t.className='toast'+(err?' err':''); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2700) }
+function updateCounters(){ const txt=plural(allCats.length); $('topCounter').textContent=txt; $('sideCounter').textContent=txt }
+
+async function fetchJ(url,retries=2){
+  for(let i=0;i<=retries;i++){
+    try{ const r=await fetch(url+'&_='+Date.now()); if(!r.ok)throw new Error(r.status); return await r.json() }
+    catch(e){ if(i===retries)throw e; await new Promise(r=>setTimeout(r,700*(i+1))) }
+  }
+}
+function tocat(item,idx){
+  const i=allCats.length+idx;
+  return{
+    id: item.id||'c_'+Date.now()+'_'+i,
+    name: NAMES[i%NAMES.length]+' '+(i+1),
+    origin:'The Cat API',
+    avatar: AVATARS[i%AVATARS.length],
+    desc: rand(CAPTIONS),
+    url: item.url,
+    type: item.url.endsWith('.mp4')?'video':'image',
+    likes: 70+Math.floor(Math.random()*200),
+    liked: false,
+  };
+}
+
+/* ════════════════════════════════════════════════
+   REEL CARD
+════════════════════════════════════════════════ */
+function makeMedia(cat){
+  const wrap=document.createElement('div'); wrap.className='media-wrap';
+  if(cat.type==='video'){
+    const v=document.createElement('video');
+    v.src=cat.url; v.loop=v.muted=v.playsInline=true; v.preload='auto';
+    v.onerror=()=>{ wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>видео недоступно</div>' };
+    v.onstalled=()=>v.load();
+    wrap.appendChild(v); vidObs.observe(v);
+  } else {
+    const img=document.createElement('img');
+    img.src=cat.url; img.loading='lazy'; img.decoding='async';
+    img.onerror=()=>{ wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>фото недоступно</div>' };
+    wrap.appendChild(img);
+  }
+  return wrap;
+}
+
+function makeWaveBars(){
+  const wave=document.createElement('div'); wave.className='wave-vis';
+  const bars=[];
+  for(let i=0;i<7;i++){
+    const b=document.createElement('div'); b.className='wave-bar';
+    b.style.height='3px'; wave.appendChild(b); bars.push(b);
+  }
+  return { el:wave, bars };
+}
+
+function makeReel(cat){
+  const reel=document.createElement('div'); reel.className='reel'; reel.dataset.id=cat.id;
+  reel.appendChild(makeMedia(cat));
+
+  const grad=document.createElement('div'); grad.className='grad'; reel.appendChild(grad);
+
+  // Vinyl progress bar at very bottom
+  const vizBar=document.createElement('div'); vizBar.className='viz-bar';
+  const vizProg=document.createElement('div'); vizProg.className='viz-progress'; vizBar.appendChild(vizProg);
+  reel.appendChild(vizBar);
+
+  // Heart
+  const hb=document.createElement('div'); hb.className='heart-burst'; hb.textContent='❤️'; reel.appendChild(hb);
+
+  // Mute button
+  const muteBtn=document.createElement('button'); muteBtn.className='mute-btn';
+  muteBtn.textContent=AudioEngine.getMuted()?'🔇':'🔊';
+  muteBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const nowMuted=!AudioEngine.getMuted();
+    AudioEngine.setMute(nowMuted);
+    muteBtn.textContent=nowMuted?'🔇':'🔊';
+    // update all mute btns
+    document.querySelectorAll('.mute-btn').forEach(b=>b.textContent=nowMuted?'🔇':'🔊');
+  });
+  reel.appendChild(muteBtn);
+
+  // Wave visualizer
+  const {el:waveEl, bars:waveBars}=makeWaveBars();
+  reel.appendChild(waveEl);
+
+  // Music ticker
+  const tickerWrap=document.createElement('div'); tickerWrap.className='music-ticker-wrap';
+  const ticker=document.createElement('div'); ticker.className='music-ticker';
+  const disc=document.createElement('div'); disc.className='music-disc'; disc.textContent='🎵';
+  const textScroll=document.createElement('div'); textScroll.className='music-text-scroll';
+  const textInner=document.createElement('div'); textInner.className='music-text-inner';
+  textInner.textContent='загружаем трек…';
+  textScroll.appendChild(textInner); ticker.appendChild(disc); ticker.appendChild(textScroll);
+  tickerWrap.appendChild(ticker); reel.appendChild(tickerWrap);
+
+  // Right side actions
+  const side=document.createElement('div'); side.className='reel-side-actions';
+  side.innerHTML=`
+    <div class="reel-side-btn like-side" data-id="${esc(cat.id)}">
+      <div class="reel-side-icon">${cat.liked?'❤️':'🤍'}</div>
+      <div class="reel-side-count like-side-count">${cat.likes}</div>
+    </div>
+    <div class="reel-side-btn"><div class="reel-side-icon">💬</div><div class="reel-side-count">${Math.floor(Math.random()*80)}</div></div>
+    <div class="reel-side-btn"><div class="reel-side-icon">📤</div><div class="reel-side-count">Поделиться</div></div>
+  `;
+  side.querySelector('.like-side').addEventListener('click',e=>{ e.stopPropagation(); doLike(cat.id,reel) });
+  reel.appendChild(side);
+
+  // Footer
+  const footer=document.createElement('div'); footer.className='reel-footer';
+  footer.innerHTML=`
+    <div class="cat-row">
+      <div class="cat-ava">${esc(cat.avatar)}</div>
+      <div>
+        <div class="cat-name">${esc(cat.name)}</div>
+        <div class="cat-origin">${esc(cat.origin)}</div>
+      </div>
+    </div>
+    <div class="reel-bottom-bar">
+      <button class="pill like-pill ${cat.liked?'liked':''}" data-id="${esc(cat.id)}">
+        <span class="li">${cat.liked?'❤️':'🤍'}</span><span class="lc">${cat.likes}</span>
+      </button>
+      <button class="pill">💬 0</button>
+      <button class="pill">📤</button>
+    </div>
+  `;
+  footer.querySelector('.like-pill').addEventListener('click',e=>{ e.stopPropagation(); doLike(cat.id,reel) });
+  reel.appendChild(footer);
+
+  // Double tap
+  let last=0;
+  reel.addEventListener('click',()=>{
+    const now=Date.now();
+    if(now-last<300){ if(!cat.liked)doLike(cat.id,reel); hb.classList.remove('pop'); void hb.offsetWidth; hb.classList.add('pop') }
+    last=now;
+  });
+
+  // ── Запуск музыки при видимости ──
+  let vizAnimId=null;
+  let progVal=0;
+  let trackInfo=null;
+
+  reel._startMusic = () => {
+    if(currentCatId===cat.id) return;
+    currentCatId=cat.id;
+    disc.classList.add('playing');
+
+    trackInfo = AudioEngine.playCat(cat.id, (freqData)=>{
+      // Обновляем wave bars
+      const bands=[0,1,2,4,6,8,12];
+      bands.forEach((b,i)=>{
+        const v=freqData[b]||0;
+        const h=Math.max(3, (v/255)*26);
+        if(waveBars[i]) waveBars[i].style.height=h+'px';
+      });
+      // Крутим прогресс бар (simulated)
+      progVal=(progVal+0.03)%100;
+      vizProg.style.width=progVal+'%';
+    });
+
+    if(trackInfo){
+      const label=`♫ ${trackInfo.trackName} • ${trackInfo.bpm} BPM • ${trackInfo.scale}`;
+      textInner.textContent=label+'   '+label; // дублируем для плавного скролла
+      textInner.classList.add('scrolling');
+    }
+  };
+
+  reel._stopMusic = () => {
+    disc.classList.remove('playing');
+    textInner.classList.remove('scrolling');
+    waveBars.forEach(b=>b.style.height='3px');
+  };
+
+  return reel;
+}
+
+function doLike(id,reel){
+  const cat=allCats.find(c=>c.id===id); if(!cat)return;
+  cat.liked=!cat.liked; cat.likes+=cat.liked?1:-1; save();
+  const pill=reel.querySelector('.like-pill');
+  if(pill){ pill.classList.toggle('liked',cat.liked); pill.querySelector('.li').textContent=cat.liked?'❤️':'🤍'; pill.querySelector('.lc').textContent=cat.likes }
+  const side=reel.querySelector('.like-side');
+  if(side){ side.querySelector('.reel-side-icon').textContent=cat.liked?'❤️':'🤍'; side.querySelector('.like-side-count').textContent=cat.likes }
+}
+
+/* ════════════════════════════════════════════════
+   FEED
+════════════════════════════════════════════════ */
+function renderFeed(scrollToId=null){
+  const area=$('contentArea'); area.innerHTML='';
+  if(reelObs){ reelObs.disconnect(); reelObs=null }
+  AudioEngine.stop(); currentCatId=null;
+
+  const feed=document.createElement('div'); feed.className='feed'; feed.id='feed';
+  const reels=[];
+  allCats.forEach(c=>{ const r=makeReel(c); reels.push(r); feed.appendChild(r) });
+  area.appendChild(feed);
+  updateCounters();
+
+  // Intersection observer — запускает музыку для видимого рила
+  reelObs = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const r=entry.target;
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        r._startMusic && r._startMusic();
+      } else {
+        if(r.dataset.id===currentCatId){
+          r._stopMusic && r._stopMusic();
+          currentCatId=null;
         }
+      }
+    });
+  },{ threshold:[0.6] });
 
-        function saveStorage() {
-            try {
-                const likedIds = allCats.filter(c => c.liked).map(c => c.id);
-                // Исключаем котов с blob-ссылками из сохранения (они не переживут перезагрузку)
-                const savedMyCats = myCats.filter(c => !c.url.startsWith('blob:'));
-                localStorage.setItem('cat_reels_optimized', JSON.stringify({ likedIds, myCats: savedMyCats }));
-            } catch (e) {}
-        }
+  reels.forEach(r=>reelObs.observe(r));
 
-        const stored = loadStorage();
+  // Infinite scroll sentinel
+  const sentinel=document.createElement('div'); sentinel.style.height='4px'; feed.appendChild(sentinel);
+  new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting&&!loading&&!cooldown&&screen==='feed') loadMore();
+  },{ root:feed, threshold:0.1 }).observe(sentinel);
 
-        function showToast(msg, isError = false) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderColor = isError ? '#ff7b8f' : '#bb99ff';
-            toast.style.background = isError ? '#2d1a28ee' : '#1d1832ee';
-            toast.innerText = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2500);
-        }
+  if(scrollToId){
+    requestAnimationFrame(()=>{ feed.querySelector(`[data-id="${scrollToId}"]`)?.scrollIntoView({behavior:'smooth'}) });
+  }
+}
 
-        function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return String(unsafe).replace(/[&<>"']/g, m => {
-                if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;';
-                if (m === '"') return '&quot;'; if (m === "'") return '&#039;';
-                return m;
-            });
-        }
+async function loadMore(){
+  if(loading||cooldown||screen!=='feed')return; loading=true;
+  const feed=$('feed'); const sentinel=feed?.lastElementChild;
+  const ls=document.createElement('div'); ls.className='loading-slide'; ls.id='ls';
+  ls.innerHTML='<div class="spinner"></div><span>Загружаем котов…</span>';
+  if(feed&&sentinel) feed.insertBefore(ls,sentinel);
+  try{
+    const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG,1),fetchJ(API_VID,1)]);
+    let raw=[]; if(ir.status==='fulfilled')raw.push(...ir.value); if(vr.status==='fulfilled')raw.push(...vr.value);
+    if(!raw.length){ cooldown=true; toast('Не удалось загрузить котов 😿',true); setTimeout(()=>cooldown=false,10000) }
+    else{
+      const cats=raw.map((x,i)=>tocat(x,i)); allCats.push(...cats);
+      if(feed&&sentinel) cats.forEach(c=>{ const r=makeReel(c); reelObs?.observe(r); feed.insertBefore(r,ls) });
+      updateCounters(); toast(`➕ +${cats.length} котов`);
+    }
+  }catch{ toast('Ошибка соединения 😿',true); cooldown=true; setTimeout(()=>cooldown=false,10000) }
+  finally{ $('ls')?.remove(); loading=false }
+}
 
-        function updateGlobalCounter() {
-            document.getElementById('globalCounter').innerText = allCats.length + ' ' + 
-                (allCats.length % 10 === 1 && allCats.length % 100 !== 11 ? 'кот' : 
-                ([2,3,4].includes(allCats.length % 10) && ![12,13,14].includes(allCats.length % 100) ? 'кота' : 'котов'));
-        }
+async function init(){
+  loading=true; toast('Загружаем котиков… 🐱');
+  try{
+    const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG),fetchJ(API_VID)]);
+    let raw=[];
+    if(ir.status==='fulfilled')raw.push(...ir.value);
+    if(vr.status==='fulfilled')raw.push(...vr.value);
+    if(raw.length) allCats.push(...raw.map((x,i)=>tocat(x,i)));
+    else allCats.push({id:'fb',name:'Котик',origin:'резерв',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
+  }catch{
+    allCats.push({id:'fb',name:'Котик',origin:'офлайн',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
+  } finally{ loading=false }
 
-        function toggleLike(catId) {
-            const cat = allCats.find(c => c.id === catId);
-            if (!cat) return;
-            cat.liked = !cat.liked;
-            cat.likes = cat.liked ? cat.likes + 1 : cat.likes - 1;
-            saveStorage();
+  if(stored.liked) allCats.forEach(c=>{ if(stored.liked.includes(c.id))c.liked=true });
+  if(stored.my?.length) stored.my.forEach(c=>{
+    if(!c.url?.startsWith('blob:')&&!allCats.find(x=>x.id===c.id)){
+      const r={...c,liked:stored.liked?.includes(c.id)||false};
+      allCats.unshift(r); myCats.push(r);
+    }
+  });
+  renderFeed();
+}
 
-            if (currentScreen === 'feed') {
-                const reel = document.querySelector(`.reel[data-id="${catId}"]`);
-                if (reel) {
-                    const btn = reel.querySelector('.like-btn');
-                    const countSpan = reel.querySelector('.likes-count');
-                    if (btn) {
-                        btn.classList.toggle('liked', cat.liked);
-                        btn.querySelector('span:first-child').innerText = cat.liked ? '❤️' : '🤍';
-                    }
-                    if (countSpan) countSpan.innerText = cat.likes;
-                }
-            } else {
-                renderProfile();
-            }
-        }
+/* ════════════════════════════════════════════════
+   PROFILE
+════════════════════════════════════════════════ */
+function renderProfile(){
+  if(reelObs){ reelObs.disconnect(); reelObs=null }
+  AudioEngine.stop(); currentCatId=null;
 
-        function createSafeMedia(cat) {
-            const container = document.createElement('div');
-            container.className = 'media-container';
+  const area=$('contentArea'); area.innerHTML='';
+  const liked=allCats.filter(c=>c.liked).length;
+  const wrap=document.createElement('div'); wrap.className='profile-wrap';
+  wrap.innerHTML=`
+    <div class="profile-hero">
+      <div class="profile-top">
+        <div class="profile-ava">😺</div>
+        <div class="profile-stats">
+          <div class="p-stat"><div class="p-stat-n">${myCats.length}</div><div class="p-stat-l">мои</div></div>
+          <div class="p-stat"><div class="p-stat-n">${liked}</div><div class="p-stat-l">лайки</div></div>
+          <div class="p-stat"><div class="p-stat-n">${allCats.length}</div><div class="p-stat-l">всего</div></div>
+        </div>
+      </div>
+      <div class="profile-name">котолюб_9000 🐾</div>
+      <div class="profile-bio">Обожаю котиков 😺 · Добавляй своих!</div>
+    </div>
+    <div class="p-tabs">
+      <div class="p-tab active" data-tab="my">📦 Мои</div>
+      <div class="p-tab" data-tab="liked">❤️ Лайкнутые</div>
+    </div>
+    <div class="p-grid" id="pgrid"></div>
+  `;
+  area.appendChild(wrap);
+  let activeTab='my';
+  const grid=wrap.querySelector('#pgrid');
+  const tabs=wrap.querySelectorAll('.p-tab');
+  function renderGrid(tab){
+    grid.innerHTML='';
+    const items=tab==='my'?myCats:allCats.filter(c=>c.liked);
+    if(!items.length){grid.innerHTML='<div class="p-empty">😿 здесь пока пусто</div>';return}
+    items.forEach(cat=>{
+      const cell=document.createElement('div'); cell.className='p-cell';
+      if(cat.type==='video'){
+        const v=document.createElement('video'); v.src=cat.url; v.preload='metadata'; v.muted=true;
+        v.onerror=()=>{cell.innerHTML=`<div class="p-cell-fb">${cat.avatar}</div>`};
+        cell.appendChild(v);
+        const b=document.createElement('span'); b.className='vid-badge'; b.textContent='🎬'; cell.appendChild(b);
+      } else {
+        const img=document.createElement('img'); img.src=cat.url; img.loading='lazy';
+        img.onerror=()=>{cell.innerHTML=`<div class="p-cell-fb">${cat.avatar}</div>`};
+        cell.appendChild(img);
+      }
+      cell.addEventListener('click',()=>setScreen('feed',cat.id));
+      grid.appendChild(cell);
+    });
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); activeTab=t.dataset.tab; renderGrid(activeTab) }));
+  renderGrid('my');
+}
 
-            if (cat.type === 'video') {
-                const video = document.createElement('video');
-                video.src = cat.url;
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-                video.playsInline = true;
-                video.preload = 'auto';
-                // Обработка ошибок загрузки видео
-                video.onerror = (e) => {
-                    console.warn('Video error', cat.url, e);
-                    container.innerHTML = `<div class="media-fallback"><span>😿</span>видео не загрузилось</div>`;
-                };
-                // Дополнительная защита: если видео зависло
-                video.onstalled = () => {
-                    container.innerHTML = `<div class="media-fallback"><span>😿</span>видео зависло</div>`;
-                };
-                video.onabort = () => {
-                    container.innerHTML = `<div class="media-fallback"><span>😿</span>загрузка прервана</div>`;
-                };
-                container.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = cat.url;
-                img.alt = 'cat';
-                img.loading = 'lazy';
-                img.decoding = 'async';
-                img.onerror = () => {
-                    container.innerHTML = `<div class="media-fallback"><span>😿</span>фото не загрузилось</div>`;
-                };
-                container.appendChild(img);
-            }
+/* ════════════════════════════════════════════════
+   SCREEN SWITCH & EVENTS
+════════════════════════════════════════════════ */
+function setScreen(s,scrollToId=null){
+  screen=s;
+  document.querySelectorAll('[data-screen]').forEach(el=>el.classList.toggle('active',el.dataset.screen===s));
+  if(s==='feed') renderFeed(scrollToId);
+  else renderProfile();
+}
+document.querySelectorAll('[data-screen]').forEach(btn=>btn.addEventListener('click',()=>setScreen(btn.dataset.screen)));
 
-            return container;
-        }
+function addCat({url,name,origin,avatar,type}){
+  if(!url)return;
+  const cat={id:'u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:name||'Мой кот',origin:origin||'загружен',avatar:avatar||'📱',desc:rand(CAPTIONS),url,type:type||'image',likes:5,liked:false};
+  myCats.push(cat); allCats.unshift(cat); save();
+  if(screen==='feed'){
+    const feed=$('feed');
+    if(feed){ const r=makeReel(cat); reelObs?.observe(r); feed.prepend(r); feed.scrollTo({top:0,behavior:'smooth'}) }
+    else renderFeed();
+  }
+  updateCounters(); toast(`🐱 ${cat.name} добавлен!`);
+}
+function handleUrl(inputId){
+  const el=$(inputId),url=el?.value.trim();
+  if(!url){toast('Вставь ссылку 😿',true);return}
+  addCat({url,name:'Кот по ссылке',origin:'URL',avatar:'🔗',type:/\.(mp4|webm|mov)$/i.test(url)?'video':'image'});
+  el.value='';
+}
 
-        function createReel(cat) {
-            const reelDiv = document.createElement('div');
-            reelDiv.className = 'reel';
-            reelDiv.dataset.id = cat.id;
+$('addUrl').addEventListener('click',()=>handleUrl('urlInp'));
+$('urlInp').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('urlInp')});
+$('addFile').addEventListener('click',()=>$('fileInput').click());
+$('sideAdd').addEventListener('click',()=>handleUrl('sideUrl'));
+$('sideUrl').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('sideUrl')});
+$('sideFile').addEventListener('click',()=>$('fileInput').click());
+$('fileInput').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file)return;
+  addCat({url:URL.createObjectURL(file),name:file.name.replace(/\.[^.]+$/,'').slice(0,22),origin:'с устройства',avatar:'📲',type:file.type.startsWith('video')?'video':'image'});
+  e.target.value='';
+});
 
-            const mediaContainer = createSafeMedia(cat);
-            const gradient = document.createElement('div');
-            gradient.className = 'gradient';
-
-            const footer = document.createElement('div');
-            footer.className = 'reel-footer';
-            footer.innerHTML = `
-                <div class="cat-details">
-                    <div class="avatar">${escapeHtml(cat.avatar)}</div>
-                    <div>
-                        <div class="name">${escapeHtml(cat.name)}</div>
-                        <div class="origin">${escapeHtml(cat.origin)}</div>
-                    </div>
-                </div>
-                <div class="actions">
-                    <button class="like-btn ${cat.liked ? 'liked' : ''}" data-id="${cat.id}">
-                        <span style="font-size:28px;">${cat.liked ? '❤️' : '🤍'}</span>
-                        <span class="likes-count">${cat.likes}</span>
-                    </button>
-                    <button class="action-btn">💬 0</button>
-                    <button class="action-btn">📤</button>
-                </div>
-            `;
-
-            reelDiv.appendChild(mediaContainer);
-            reelDiv.appendChild(gradient);
-            reelDiv.appendChild(footer);
-
-            const likeBtn = footer.querySelector('.like-btn');
-            likeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleLike(cat.id);
-            });
-
-            return reelDiv;
-        }
-
-        async function fetchWithRetry(url, retries = 2) {
-            for (let i = 0; i <= retries; i++) {
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return await res.json();
-                } catch (e) {
-                    if (i === retries) throw e;
-                    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-                }
-            }
-        }
-
-        async function loadMoreCats() {
-            if (isLoading || !hasMore || currentScreen !== 'feed' || errorCooldown) return;
-
-            isLoading = true;
-            const feedDiv = document.querySelector('.feed');
-            if (!feedDiv) {
-                isLoading = false;
-                return;
-            }
-
-            const loadingEl = document.createElement('div');
-            loadingEl.className = 'loading-indicator';
-            loadingEl.id = 'loading-spinner';
-            loadingEl.innerHTML = '<div class="spinner"></div><span>Загружаем ещё котов...</span>';
-            feedDiv.appendChild(loadingEl);
-
-            try {
-                const [imagesResult, videosResult] = await Promise.allSettled([
-                    fetchWithRetry(CAT_API_IMAGES + '&_=' + Date.now(), 1),
-                    fetchWithRetry(CAT_API_VIDEOS + '&_=' + Date.now(), 1)
-                ]);
-
-                let newApiCats = [];
-                if (imagesResult.status === 'fulfilled' && Array.isArray(imagesResult.value)) {
-                    newApiCats.push(...imagesResult.value);
-                }
-                if (videosResult.status === 'fulfilled' && Array.isArray(videosResult.value)) {
-                    newApiCats.push(...videosResult.value);
-                }
-
-                if (newApiCats.length === 0) {
-                    hasMore = false;
-                    errorCooldown = true;
-                    showToast('Не удалось загрузить новых котов, повтор через 10 сек', true);
-                    setTimeout(() => {
-                        hasMore = true;
-                        errorCooldown = false;
-                    }, 10000);
-                } else {
-                    const startIndex = allCats.length;
-                    const newCats = newApiCats.map((item, idx) => ({
-                        id: item.id || `api_${Date.now()}_${startIndex + idx}_${Math.random()}`,
-                        name: ['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба'][(startIndex + idx) % 10] + ' ' + (startIndex + idx + 1),
-                        origin: 'The Cat API',
-                        avatar: ['🐈','😸','😻','😽','😼','🙀','😿','😾'][(startIndex + idx) % 8],
-                        url: item.url,
-                        type: item.url.includes('.mp4') ? 'video' : 'image',
-                        likes: 70 + Math.floor(Math.random() * 180),
-                        liked: false,
-                    }));
-
-                    allCats.push(...newCats);
-                    newCats.forEach(cat => feedDiv.appendChild(createReel(cat)));
-                    updateGlobalCounter();
-                    showToast(`➕ +${newCats.length} котов в ленте`);
-                }
-            } catch (error) {
-                console.error('Критическая ошибка загрузки:', error);
-                showToast('Ошибка соединения, повтор через 10 сек', true);
-                errorCooldown = true;
-                setTimeout(() => {
-                    errorCooldown = false;
-                }, 10000);
-            } finally {
-                const spinner = document.getElementById('loading-spinner');
-                if (spinner) spinner.remove();
-                isLoading = false;
-            }
-        }
-
-        async function initialLoad() {
-            if (isLoading) return;
-            isLoading = true;
-            showToast('Загружаем котиков...');
-
-            try {
-                const [imagesResult, videosResult] = await Promise.allSettled([
-                    fetchWithRetry(CAT_API_IMAGES + '&_=' + Date.now()),
-                    fetchWithRetry(CAT_API_VIDEOS + '&_=' + Date.now())
-                ]);
-
-                let apiCats = [];
-                if (imagesResult.status === 'fulfilled') apiCats.push(...imagesResult.value);
-                if (videosResult.status === 'fulfilled') apiCats.push(...videosResult.value);
-
-                if (apiCats.length > 0) {
-                    const newCats = apiCats.map((item, index) => ({
-                        id: item.id || `api_init_${Date.now()}_${index}`,
-                        name: ['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба'][index % 10] + ' ' + (index+1),
-                        origin: 'The Cat API',
-                        avatar: ['🐈','😸','😻','😽','😼','🙀','😿','😾'][index % 8],
-                        url: item.url,
-                        type: item.url.includes('.mp4') ? 'video' : 'image',
-                        likes: 70 + Math.floor(Math.random() * 180),
-                        liked: false,
-                    }));
-                    allCats.push(...newCats);
-                } else {
-                    allCats.push({
-                        id: 'fallback_main',
-                        name: 'Тестовый кот',
-                        origin: 'офлайн',
-                        avatar: '😺',
-                        url: 'https://cdn2.thecatapi.com/images/9j5.jpg',
-                        type: 'image',
-                        likes: 42,
-                        liked: false,
-                    });
-                }
-            } catch (error) {
-                console.error('Initial load failed:', error);
-                allCats.push({
-                    id: 'fallback_error',
-                    name: 'Котик',
-                    origin: 'резервный',
-                    avatar: '😿',
-                    url: 'https://cdn2.thecatapi.com/images/9j5.jpg',
-                    type: 'image',
-                    likes: 7,
-                    liked: false,
-                });
-            } finally {
-                isLoading = false;
-            }
-
-            // Восстанавливаем лайки (без blob-ссылок)
-            if (stored.likedIds) {
-                allCats.forEach(c => { if (stored.likedIds.includes(c.id)) c.liked = true; });
-            }
-            // Восстанавливаем моих котов, исключая blob-ссылки (они не сохранялись)
-            if (stored.myCats && stored.myCats.length) {
-                stored.myCats.forEach(c => {
-                    // Дополнительная проверка на blob
-                    if (!c.url.startsWith('blob:') && !allCats.some(x => x.id === c.id)) {
-                        const restored = { ...c, liked: stored.likedIds.includes(c.id) };
-                        allCats.unshift(restored);
-                        myCats.push(restored);
-                    }
-                });
-            }
-
-            renderFeed();
-        }
-
-        function renderFeed() {
-            const area = document.getElementById('contentArea');
-            area.innerHTML = '';
-            const feedDiv = document.createElement('div');
-            feedDiv.className = 'feed';
-            feedDiv.id = 'feedContainer';
-            allCats.forEach(cat => feedDiv.appendChild(createReel(cat)));
-            area.appendChild(feedDiv);
-            updateGlobalCounter();
-
-            feedDiv.addEventListener('scroll', handleInfiniteScroll);
-        }
-
-        function handleInfiniteScroll() {
-            const feedDiv = document.getElementById('feedContainer');
-            if (!feedDiv || isLoading || !hasMore || errorCooldown) return;
-
-            const scrollTop = feedDiv.scrollTop;
-            const scrollHeight = feedDiv.scrollHeight;
-            const clientHeight = feedDiv.clientHeight;
-
-            if (scrollHeight - scrollTop - clientHeight < 500) {
-                loadMoreCats();
-            }
-        }
-
-        function renderProfile() {
-            const area = document.getElementById('contentArea');
-            area.innerHTML = '';
-
-            const likedCount = allCats.filter(c => c.liked).length;
-            const myCount = myCats.length;
-
-            const profileDiv = document.createElement('div');
-            profileDiv.style.background = '#100e1c';
-            profileDiv.style.height = '100%';
-            profileDiv.style.overflowY = 'auto';
-
-            profileDiv.innerHTML = `
-                <div class="profile-header">
-                    <div style="display:flex; gap:24px;">
-                        <div class="big-avatar">😺</div>
-                        <div class="profile-stats">
-                            <div class="stat"><span class="stat-num">${myCount}</span><span class="stat-label"> мои</span></div>
-                            <div class="stat"><span class="stat-num">${likedCount}</span><span class="stat-label"> лайки</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tabs" id="profileTabs">
-                    <div class="tab active" data-tab="my">📦 Мои</div>
-                    <div class="tab" data-tab="liked">❤️ Лайкнутые</div>
-                </div>
-                <div class="grid" id="profileGrid"></div>
-            `;
-
-            area.appendChild(profileDiv);
-
-            const grid = document.getElementById('profileGrid');
-            const tabs = document.querySelectorAll('.tab');
-            let activeTab = 'my';
-
-            function renderGrid(tab) {
-                grid.innerHTML = '';
-                let items = tab === 'my' ? myCats : allCats.filter(c => c.liked);
-                if (items.length === 0) {
-                    grid.innerHTML = '<div class="empty-state">😿 здесь пока пусто</div>';
-                    return;
-                }
-                items.forEach(cat => {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-item';
-                    cell.dataset.id = cat.id;
-                    const media = cat.type === 'video' 
-                        ? `<video src="${escapeHtml(cat.url)}" preload="metadata" muted onerror="this.outerHTML='<div class=\\'media-fallback\\' style=\\'height:100%;display:flex;align-items:center;justify-content:center;\\'><span>😿</span></div>'"></video>` 
-                        : `<img src="${escapeHtml(cat.url)}" loading="lazy" onerror="this.outerHTML='<div class=\\'media-fallback\\' style=\\'height:100%;display:flex;align-items:center;justify-content:center;\\'><span>😿</span></div>'">`;
-                    cell.innerHTML = media + (cat.type === 'video' ? '<span class="video-badge">🎬</span>' : '');
-                    cell.addEventListener('click', () => {
-                        setScreen('feed');
-                        requestAnimationFrame(() => {
-                            const target = document.querySelector(`.reel[data-id="${cat.id}"]`);
-                            if (target) {
-                                target.scrollIntoView({ behavior: 'smooth' });
-                            } else {
-                                renderFeed();
-                                requestAnimationFrame(() => {
-                                    document.querySelector(`.reel[data-id="${cat.id}"]`)?.scrollIntoView({ behavior: 'smooth' });
-                                });
-                            }
-                        });
-                    });
-                    grid.appendChild(cell);
-                });
-            }
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    activeTab = tab.dataset.tab;
-                    renderGrid(activeTab);
-                });
-            });
-
-            renderGrid('my');
-        }
-
-        function setScreen(screen) {
-            currentScreen = screen;
-            document.getElementById('navFeed').classList.toggle('active', screen === 'feed');
-            document.getElementById('navProfile').classList.toggle('active', screen === 'profile');
-            if (screen === 'feed') {
-                renderFeed();
-            } else {
-                renderProfile();
-            }
-        }
-
-        document.getElementById('navFeed').addEventListener('click', () => setScreen('feed'));
-        document.getElementById('navProfile').addEventListener('click', () => setScreen('profile'));
-
-        function addNewCat(catData) {
-            const newCat = {
-                id: 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2,8),
-                name: catData.name || 'Мой кот',
-                origin: catData.origin || 'Загружен',
-                avatar: catData.avatar || '📱',
-                url: catData.url,
-                type: catData.type || 'image',
-                likes: catData.likes || 5,
-                liked: false,
-            };
-            myCats.push(newCat);
-            allCats.unshift(newCat);
-            saveStorage();
-
-            if (currentScreen === 'feed') {
-                const feedDiv = document.querySelector('.feed');
-                if (feedDiv) {
-                    feedDiv.prepend(createReel(newCat));
-                    feedDiv.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    renderFeed();
-                }
-            }
-            updateGlobalCounter();
-            showToast(`🐱 ${newCat.name} добавлен`);
-        }
-
-        document.getElementById('addUrlBtn').addEventListener('click', () => {
-            const url = document.getElementById('urlInput').value.trim();
-            if (!url) return showToast('Вставь ссылку');
-            addNewCat({
-                name: 'Кот по ссылке',
-                origin: 'URL',
-                avatar: '🔗',
-                url: url,
-                type: /\.(mp4|webm|mov)$/i.test(url) ? 'video' : 'image',
-            });
-            document.getElementById('urlInput').value = '';
-        });
-
-        document.getElementById('attachBtn').addEventListener('click', () => document.getElementById('fileInput').click());
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const url = URL.createObjectURL(file);
-            addNewCat({
-                name: file.name.split('.')[0].slice(0,20),
-                origin: 'с устройства',
-                avatar: '📲',
-                url: url,
-                type: file.type.startsWith('video/') ? 'video' : 'image',
-            });
-            document.getElementById('fileInput').value = '';
-        });
-
-        initialLoad();
-
-        window.addEventListener('beforeunload', saveStorage);
-    })();
+window.addEventListener('beforeunload',save);
+init();
+})();
 </script>
 </body>
 </html>
