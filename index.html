@@ -18,10 +18,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 button{border:none;background:none;color:inherit;font:inherit;cursor:pointer}
 input{border:none;background:none;color:inherit;font:inherit;outline:none}
 
-/* ═══ SHELL ═══ */
 .app{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
 
-/* ═══ DESKTOP ≥ 900px ═══ */
 @media(min-width:900px){
   .app{flex-direction:row}
   .sidebar{display:flex!important;flex-direction:column;width:240px;min-width:240px;height:100%;background:var(--surface);border-right:1px solid var(--border);padding:28px 14px 24px;gap:4px;flex-shrink:0}
@@ -44,7 +42,6 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
   .upload-bar{display:none!important}
 }
 
-/* ═══ TOPBAR ═══ */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .topbar-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.2rem;background:linear-gradient(120deg,#ffd6a8,#c97bff,#7ed4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-counter{background:var(--surface2);border:1px solid var(--border2);border-radius:40px;padding:5px 14px;font-size:.8rem;font-weight:700;color:var(--accent)}
@@ -52,7 +49,6 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
 .main-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .content-area{flex:1;overflow:hidden;min-height:0}
 
-/* ═══ FEED ═══ */
 .feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .feed::-webkit-scrollbar{display:none}
 .reel{height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;background:#000;display:flex;flex-direction:column;justify-content:flex-end;flex-shrink:0}
@@ -62,117 +58,95 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
 .media-fallback .fi{font-size:3.5rem}
 .grad{position:absolute;bottom:0;left:0;right:0;height:58%;background:linear-gradient(to top,rgba(0,0,0,.93),transparent);pointer-events:none;z-index:2}
 
-/* ═══ MUSIC VISUALIZER BAR ═══ */
-.viz-bar {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  z-index: 10;
-  overflow: hidden;
-  background: transparent;
+/* ── ПАУЗА ── */
+.pause-overlay{
+  position:absolute;inset:0;z-index:8;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.32);
+  opacity:0;pointer-events:none;
+  transition:opacity .18s;
 }
-.viz-progress {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  width: 0%;
-  transition: none;
-  box-shadow: 0 0 8px var(--accent);
-}
+.pause-overlay.show{opacity:1}
+.pause-icon{font-size:5rem;filter:drop-shadow(0 2px 20px rgba(0,0,0,.9))}
 
-/* ═══ MUSIC TICKER (bottom of reel) ═══ */
-.music-ticker-wrap {
-  position: absolute;
-  bottom: 185px;
-  left: 18px;
-  right: 74px;
-  z-index: 6;
-  overflow: hidden;
-  pointer-events: none;
+/* ── ПОДЕЛИТЬСЯ: шторка снизу ── */
+.share-overlay{
+  position:fixed;inset:0;z-index:600;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
 }
-.music-ticker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .78rem;
-  color: rgba(255,255,255,.88);
-  white-space: nowrap;
+.share-overlay.open{opacity:1;pointer-events:all}
+.share-sheet{
+  width:100%;max-width:500px;
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border2);
+  padding:16px 20px calc(28px + env(safe-area-inset-bottom));
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.25,.8,.25,1);
 }
-.music-disc {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg,#2a1840,#6c3ba0);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
-  border: 1.5px solid rgba(255,255,255,.3);
-  animation: discSpin 3s linear infinite;
-  animation-play-state: paused;
+.share-overlay.open .share-sheet{transform:translateY(0)}
+.share-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin:0 auto 18px}
+.share-title{font-family:'Unbounded',sans-serif;font-size:.92rem;font-weight:700;text-align:center;margin-bottom:16px}
+.share-url-row{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:14px;padding:12px 14px;margin-bottom:16px;
 }
-.music-disc.playing { animation-play-state: running; }
-@keyframes discSpin { to { transform: rotate(360deg); } }
-.music-text-scroll {
-  overflow: hidden;
-  flex: 1;
+.share-url-text{flex:1;font-size:.8rem;color:var(--accent);word-break:break-all;line-height:1.45}
+.share-copy{
+  background:#6c4bc2;color:#fff;
+  border-radius:10px;padding:8px 14px;
+  font-size:.8rem;font-weight:700;white-space:nowrap;
+  box-shadow:0 3px 0 #3d2d66;
+  transition:transform .08s,box-shadow .08s;
 }
-.music-text-inner {
-  display: inline-block;
-  white-space: nowrap;
+.share-copy:active{transform:translateY(2px);box-shadow:0 1px 0 #3d2d66}
+.share-apps{display:flex;gap:10px;margin-bottom:14px}
+.share-app{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;padding:14px 8px;
+  font-size:.75rem;font-weight:600;color:var(--dim);
+  cursor:pointer;transition:background .15s,color .15s;
 }
-.music-text-inner.scrolling {
-  animation: textScroll 8s linear infinite;
+.share-app:active{background:#222;color:var(--text)}
+.share-app-icon{font-size:1.6rem}
+.share-close-btn{
+  width:100%;padding:13px;
+  background:var(--surface2);border-radius:12px;
+  font-weight:700;font-size:.9rem;color:var(--dim);
+  transition:color .15s;
 }
-@keyframes textScroll {
-  0%   { transform: translateX(0); }
-  40%  { transform: translateX(-50%); }
-  50%  { transform: translateX(-50%); }
-  90%  { transform: translateX(0); }
-  100% { transform: translateX(0); }
-}
+.share-close-btn:active{color:var(--text)}
 
-/* ═══ WAVE VISUALIZER (right side) ═══ */
-.wave-vis {
-  position: absolute;
-  right: 14px;
-  bottom: 360px;
-  z-index: 6;
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 28px;
-}
-.wave-bar {
-  width: 3px;
-  border-radius: 2px;
-  background: rgba(255,255,255,.7);
-  min-height: 3px;
-  transition: height .08s ease;
-}
+.viz-bar{position:absolute;bottom:0;left:0;right:0;height:3px;z-index:10;overflow:hidden;background:transparent}
+.viz-progress{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:none;box-shadow:0 0 8px var(--accent)}
 
-/* ═══ RIGHT SIDE ACTIONS ═══ */
+.music-ticker-wrap{position:absolute;bottom:185px;left:18px;right:74px;z-index:6;overflow:hidden;pointer-events:none}
+.music-ticker{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.88);white-space:nowrap}
+.music-disc{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2a1840,#6c3ba0);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3);animation:discSpin 3s linear infinite;animation-play-state:paused}
+.music-disc.playing{animation-play-state:running}
+@keyframes discSpin{to{transform:rotate(360deg)}}
+.music-text-scroll{overflow:hidden;flex:1}
+.music-text-inner{display:inline-block;white-space:nowrap}
+.music-text-inner.scrolling{animation:textScroll 8s linear infinite}
+@keyframes textScroll{0%{transform:translateX(0)}40%{transform:translateX(-50%)}50%{transform:translateX(-50%)}90%{transform:translateX(0)}100%{transform:translateX(0)}}
+
+.wave-vis{position:absolute;right:14px;bottom:360px;z-index:6;display:flex;align-items:flex-end;gap:2px;height:28px}
+.wave-bar{width:3px;border-radius:2px;background:rgba(255,255,255,.7);min-height:3px;transition:height .08s ease}
+
 .reel-side-actions{position:absolute;right:14px;bottom:110px;display:flex;flex-direction:column;align-items:center;gap:22px;z-index:5}
 .reel-side-btn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
 .reel-side-icon{font-size:1.8rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));transition:transform .1s}
 .reel-side-btn:active .reel-side-icon{transform:scale(.88)}
 .reel-side-count{font-size:.72rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
 
-/* Mute button */
-.mute-btn {
-  position: absolute;
-  top: 14px; right: 14px;
-  z-index: 10;
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background .15s, transform .1s;
-}
-.mute-btn:active { transform: scale(.9); }
+.mute-btn{position:absolute;top:14px;right:14px;z-index:10;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;transition:background .15s,transform .1s}
+.mute-btn:active{transform:scale(.9)}
 
-/* ═══ REEL FOOTER ═══ */
 .reel-footer{position:relative;z-index:4;padding:0 70px 28px 18px;display:flex;flex-direction:column;gap:10px}
 .cat-row{display:flex;align-items:center;gap:12px}
 .cat-ava{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#b87fff,#ff7eb3);display:flex;align-items:center;justify-content:center;font-size:1.6rem;border:2px solid rgba(255,255,255,.55);flex-shrink:0}
@@ -184,25 +158,21 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
 .pill:active{transform:scale(.92)}
 .pill.liked{background:rgba(60,15,40,.8);border-color:#ff7eb3;color:#ffcef0}
 
-/* ═══ LOADING ═══ */
 .loading-slide{height:100%;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;color:var(--accent);font-weight:700;font-size:1rem;flex-shrink:0}
 .spinner{width:36px;height:36px;border:3px solid rgba(184,127,255,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ═══ UPLOAD BAR ═══ */
 .upload-bar{background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:center;flex-shrink:0}
 .url-inp{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:100px;padding:11px 16px;font-size:.88rem;color:var(--text);font-family:var(--font)}
 .url-inp::placeholder{color:var(--dim)}
 .icon-btn{width:44px;height:44px;background:#6c4bc2;border-radius:50%;font-size:1.1rem;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #3d2d66;transition:transform .08s,box-shadow .08s;flex-shrink:0}
 .icon-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #3d2d66}
 
-/* ═══ BOTTOM NAV ═══ */
 .bottom-nav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:6px 0 calc(6px + env(safe-area-inset-bottom));flex-shrink:0}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;color:var(--dim);font-size:.72rem;font-weight:600;cursor:pointer;border-radius:14px;transition:color .15s}
 .bnav-btn .bicon{font-size:1.5rem}
 .bnav-btn.active{color:var(--text)}
 
-/* ═══ PROFILE ═══ */
 .profile-wrap{height:100%;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;background:var(--bg)}
 .profile-wrap::-webkit-scrollbar{width:3px}
 .profile-wrap::-webkit-scrollbar-thumb{background:var(--border)}
@@ -226,20 +196,49 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
 .vid-badge{position:absolute;bottom:4px;right:6px;font-size:.85rem;background:rgba(0,0,0,.6);border-radius:8px;padding:1px 5px;color:#fff}
 .p-empty{grid-column:span 3;text-align:center;padding:60px 20px;color:var(--dim);font-size:1rem}
 
-/* ═══ TOAST ═══ */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(12,10,24,.94);backdrop-filter:blur(14px);border:1.5px solid var(--accent);color:var(--text);padding:10px 24px;border-radius:100px;font-size:.85rem;font-weight:700;z-index:999;white-space:nowrap;animation:tst 2.6s forwards}
 .toast.err{border-color:var(--accent2)}
 @keyframes tst{0%{opacity:0;transform:translateX(-50%) translateY(16px)}14%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-12px)}}
 
-/* ═══ HEART BURST ═══ */
 .heart-burst{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;font-size:5rem;pointer-events:none;opacity:0}
 .heart-burst.pop{animation:hpop .65s forwards}
 @keyframes hpop{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.25)}55%{opacity:1;transform:scale(1)}100%{opacity:0}}
 </style>
 </head>
 <body>
-<div class="app">
 
+<!-- ════ ШТОРКА «ПОДЕЛИТЬСЯ» ════ -->
+<div class="share-overlay" id="shareOverlay">
+  <div class="share-sheet">
+    <div class="share-handle"></div>
+    <div class="share-title">Поделиться котом 🐱</div>
+    <div class="share-url-row">
+      <span class="share-url-text" id="shareUrlText"></span>
+      <button class="share-copy" id="shareCopyBtn">Копировать</button>
+    </div>
+    <div class="share-apps">
+      <div class="share-app" id="shareNative">
+        <span class="share-app-icon">📤</span>
+        <span>Поделиться</span>
+      </div>
+      <div class="share-app" id="shareTg">
+        <span class="share-app-icon">✈️</span>
+        <span>Telegram</span>
+      </div>
+      <div class="share-app" id="shareVk">
+        <span class="share-app-icon">💙</span>
+        <span>ВКонтакте</span>
+      </div>
+      <div class="share-app" id="shareWa">
+        <span class="share-app-icon">💚</span>
+        <span>WhatsApp</span>
+      </div>
+    </div>
+    <button class="share-close-btn" id="shareCloseBtn">Закрыть</button>
+  </div>
+</div>
+
+<div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">🐈 КОТО-РИЛС</div>
     <div class="sidebar-counter-badge" id="sideCounter">0 котов</div>
@@ -280,391 +279,278 @@ input{border:none;background:none;color:inherit;font:inherit;outline:none}
 (() => {
 
 /* ════════════════════════════════════════════════
-   🎵 WEB AUDIO ENGINE
-   Генерирует уникальную lofi-мелодию для каждого кота
-   на основе его ID (детерминированный рандом)
+   🔗 SHARE
+════════════════════════════════════════════════ */
+const BASE_URL = 'https://daniilbuzov.github.io/kotorils/';
+let shareUrl = '';
+
+function openShare(num) {
+  shareUrl = BASE_URL + num;
+  document.getElementById('shareUrlText').textContent = shareUrl;
+  document.getElementById('shareOverlay').classList.add('open');
+}
+function closeShare() {
+  document.getElementById('shareOverlay').classList.remove('open');
+}
+
+document.getElementById('shareCloseBtn').addEventListener('click', closeShare);
+document.getElementById('shareOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('shareOverlay')) closeShare();
+});
+
+document.getElementById('shareCopyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(shareUrl).catch(() => {
+    const t = document.createElement('textarea');
+    t.value = shareUrl; document.body.appendChild(t); t.select();
+    document.execCommand('copy'); document.body.removeChild(t);
+  });
+  toast('Ссылка скопирована! 🔗');
+  closeShare();
+});
+
+document.getElementById('shareNative').addEventListener('click', () => {
+  if (navigator.share) {
+    navigator.share({ title: 'Смотри этого кота! 🐱', url: shareUrl }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(shareUrl);
+    toast('Ссылка скопирована! 🔗');
+  }
+  closeShare();
+});
+document.getElementById('shareTg').addEventListener('click', () => {
+  open('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent('Смотри кота! 🐱'), '_blank');
+  closeShare();
+});
+document.getElementById('shareVk').addEventListener('click', () => {
+  open('https://vk.com/share.php?url=' + encodeURIComponent(shareUrl), '_blank');
+  closeShare();
+});
+document.getElementById('shareWa').addEventListener('click', () => {
+  open('https://wa.me/?text=' + encodeURIComponent('Смотри кота! 🐱 ' + shareUrl), '_blank');
+  closeShare();
+});
+
+/* ════════════════════════════════════════════════
+   🎵 WEB AUDIO ENGINE  (оригинал без изменений)
 ════════════════════════════════════════════════ */
 const AudioEngine = (() => {
-  let ctx = null;
-  let masterGain = null;
-  let currentNodes = [];
-  let muted = false;
-  let vizCallback = null;
-  let analyser = null;
-  let animFrame = null;
+  let ctx=null,masterGain=null,currentNodes=[],muted=false,vizCallback=null,analyser=null,animFrame=null;
 
-  // Сеяный генератор случайных чисел (чтобы один кот = одна мелодия)
-  function seededRand(seed) {
-    let s = seed;
-    return () => {
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      return (s >>> 0) / 0xffffffff;
-    };
-  }
+  function seededRand(seed){let s=seed;return()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff}}
+  function hashStr(str){let h=5381;for(let i=0;i<str.length;i++)h=(h*33)^str.charCodeAt(i);return h>>>0}
 
-  function hashStr(str) {
-    let h = 5381;
-    for(let i=0;i<str.length;i++) h=(h*33)^str.charCodeAt(i);
-    return h >>> 0;
-  }
+  const SCALES={pentatonic:[0,2,4,7,9],minor:[0,2,3,5,7,8,10],major:[0,2,4,5,7,9,11],blues:[0,3,5,6,7,10],dorian:[0,2,3,5,7,9,10]};
+  const SCALE_NAMES=Object.keys(SCALES);
 
-  // Музыкальные гаммы
-  const SCALES = {
-    pentatonic: [0,2,4,7,9],
-    minor:      [0,2,3,5,7,8,10],
-    major:      [0,2,4,5,7,9,11],
-    blues:      [0,3,5,6,7,10],
-    dorian:     [0,2,3,5,7,9,10],
-  };
-  const SCALE_NAMES = Object.keys(SCALES);
-
-  // Частота ноты по MIDI номеру
-  function midiToHz(note) { return 440 * Math.pow(2, (note-69)/12); }
-
-  function ensureCtx() {
-    if(!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = muted ? 0 : 0.55;
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 64;
-      masterGain.connect(analyser);
-      analyser.connect(ctx.destination);
+  function ensureCtx(){
+    if(!ctx){
+      ctx=new(window.AudioContext||window.webkitAudioContext)();
+      masterGain=ctx.createGain(); masterGain.gain.value=muted?0:0.55;
+      analyser=ctx.createAnalyser(); analyser.fftSize=64;
+      masterGain.connect(analyser); analyser.connect(ctx.destination);
     }
-    if(ctx.state === 'suspended') ctx.resume();
+    if(ctx.state==='suspended')ctx.resume();
     return ctx;
   }
 
-  function stopAll() {
+  function stopAll(){
     cancelAnimationFrame(animFrame);
-    currentNodes.forEach(n => { try { n.stop && n.stop(); n.disconnect && n.disconnect(); } catch {} });
-    currentNodes = [];
-    vizCallback = null;
+    currentNodes.forEach(n=>{try{n.stop&&n.stop();n.disconnect&&n.disconnect()}catch{}});
+    currentNodes=[]; vizCallback=null;
   }
 
-  // ── Создаём LP-фильтр (lofi эффект) ──
-  function makeLofiChain(output) {
-    const ac = ensureCtx();
-    // Lowpass filter — срезаем верха (lofi звучание)
-    const lpf = ac.createBiquadFilter();
-    lpf.type = 'lowpass'; lpf.frequency.value = 2200; lpf.Q.value = 0.7;
-    // Небольшой реверб через ConvolverNode (простой)
-    const wet = ac.createGain(); wet.gain.value = 0.18;
-    const dry = ac.createGain(); dry.gain.value = 0.82;
-    lpf.connect(dry); dry.connect(output);
-    lpf.connect(wet); wet.connect(output);
-    return lpf; // входная точка цепочки
+  function makeLofiChain(output){
+    const ac=ensureCtx();
+    const lpf=ac.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=2200; lpf.Q.value=0.7;
+    const wet=ac.createGain(); wet.gain.value=0.18;
+    const dry=ac.createGain(); dry.gain.value=0.82;
+    lpf.connect(dry); dry.connect(output); lpf.connect(wet); wet.connect(output);
+    return lpf;
   }
 
-  // ── Генерируем мягкий шум (vinyl crackle) ──
-  function makeVinylNoise(output, rng) {
-    const ac = ensureCtx();
-    const bufSize = ac.sampleRate * 2;
-    const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
-    const data = buf.getChannelData(0);
-    for(let i=0;i<bufSize;i++) data[i] = (rng()-0.5)*0.015;
-    const src = ac.createBufferSource();
-    src.buffer = buf; src.loop = true;
-    const g = ac.createGain(); g.gain.value = 0.06;
-    src.connect(g); g.connect(output);
-    src.start();
-    currentNodes.push(src, g);
+  function makeVinylNoise(output,rng){
+    const ac=ensureCtx(),bufSize=ac.sampleRate*2,buf=ac.createBuffer(1,bufSize,ac.sampleRate),data=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++)data[i]=(rng()-0.5)*0.015;
+    const src=ac.createBufferSource(); src.buffer=buf; src.loop=true;
+    const g=ac.createGain(); g.gain.value=0.06;
+    src.connect(g); g.connect(output); src.start(); currentNodes.push(src,g);
   }
 
-  // ── Бас-линия ──
-  function makeBass(rootHz, scale, bpm, output, rng) {
-    const ac = ensureCtx();
-    const beatSec = 60/bpm;
-    const bassNotes = [0,0,scale[2]||3, scale[4]||7];
-
-    function schedBeat(time) {
-      const note = bassNotes[Math.floor(rng()*bassNotes.length)];
-      const freq = rootHz * Math.pow(2, note/12) / 2; // октавой ниже
-
-      const osc = ac.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
-
-      const env = ac.createGain();
-      env.gain.setValueAtTime(0, time);
-      env.gain.linearRampToValueAtTime(0.28, time+0.02);
-      env.gain.exponentialRampToValueAtTime(0.001, time+beatSec*0.9);
-
-      const lpf = ac.createBiquadFilter();
-      lpf.type='lowpass'; lpf.frequency.value=400;
-
-      osc.connect(lpf); lpf.connect(env); env.connect(output);
-      osc.start(time); osc.stop(time+beatSec);
-      currentNodes.push(osc,env,lpf);
+  function makeBass(rootHz,scale,bpm,output,rng){
+    const ac=ensureCtx(),beatSec=60/bpm,bassNotes=[0,0,scale[2]||3,scale[4]||7];
+    function schedBeat(time){
+      const note=bassNotes[Math.floor(rng()*bassNotes.length)];
+      const freq=rootHz*Math.pow(2,note/12)/2;
+      const osc=ac.createOscillator(); osc.type='triangle'; osc.frequency.setValueAtTime(freq,time);
+      const env=ac.createGain(); env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.28,time+0.02); env.gain.exponentialRampToValueAtTime(0.001,time+beatSec*0.9);
+      const lpf=ac.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=400;
+      osc.connect(lpf); lpf.connect(env); env.connect(output); osc.start(time); osc.stop(time+beatSec); currentNodes.push(osc,env,lpf);
     }
-
-    let nextBeat = ac.currentTime + 0.1;
-    function scheduler() {
-      while(nextBeat < ac.currentTime + 0.3) {
-        schedBeat(nextBeat);
-        nextBeat += beatSec * (rng()>0.7 ? 2 : 1);
-      }
-    }
-    const tid = setInterval(scheduler, 100);
-    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+    let nextBeat=ac.currentTime+0.1;
+    function scheduler(){while(nextBeat<ac.currentTime+0.3){schedBeat(nextBeat);nextBeat+=beatSec*(rng()>0.7?2:1)}}
+    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
   }
 
-  // ── Мелодия (синтезатор) ──
-  function makeMelody(rootHz, scale, bpm, output, rng) {
-    const ac = ensureCtx();
-    const beatSec = 60/bpm;
-    // Паттерн: 16 ступеней
-    const pattern = Array.from({length:16}, (_,i) => {
-      if(rng() < 0.3) return null; // пауза
-      const step = scale[Math.floor(rng()*scale.length)];
-      const octave = rng() > 0.7 ? 12 : 0;
-      return step + octave;
-    });
-
-    let step = 0;
-    function schedNote(time) {
-      const note = pattern[step % pattern.length];
-      step++;
-      if(note === null) return;
-
-      const freq = rootHz * Math.pow(2, note/12);
-      const osc = ac.createOscillator();
-      // Разные тембры для разнообразия
-      const waveTypes = ['sine','triangle','sine'];
-      osc.type = waveTypes[Math.floor(rng()*waveTypes.length)];
-      osc.frequency.setValueAtTime(freq, time);
-      // Лёгкое вибрато
-      const vibLfo = ac.createOscillator();
-      vibLfo.frequency.value = 4.5 + rng()*2;
-      const vibGain = ac.createGain(); vibGain.gain.value = freq*0.005;
-      vibLfo.connect(vibGain); vibGain.connect(osc.frequency);
-      vibLfo.start(time);
-
-      const env = ac.createGain();
-      const dur = beatSec * 0.5;
-      env.gain.setValueAtTime(0, time);
-      env.gain.linearRampToValueAtTime(0.22, time+0.03);
-      env.gain.exponentialRampToValueAtTime(0.001, time+dur);
-
-      osc.connect(env); env.connect(output);
-      osc.start(time); osc.stop(time+dur+0.05);
-      vibLfo.stop(time+dur+0.05);
+  function makeMelody(rootHz,scale,bpm,output,rng){
+    const ac=ensureCtx(),beatSec=60/bpm;
+    const pattern=Array.from({length:16},(_,i)=>{if(rng()<0.3)return null;const step=scale[Math.floor(rng()*scale.length)];const octave=rng()>0.7?12:0;return step+octave});
+    let step=0;
+    function schedNote(time){
+      const note=pattern[step%pattern.length]; step++;
+      if(note===null)return;
+      const freq=rootHz*Math.pow(2,note/12);
+      const osc=ac.createOscillator(); osc.type=['sine','triangle','sine'][Math.floor(rng()*3)]; osc.frequency.setValueAtTime(freq,time);
+      const vibLfo=ac.createOscillator(); vibLfo.frequency.value=4.5+rng()*2;
+      const vibGain=ac.createGain(); vibGain.gain.value=freq*0.005;
+      vibLfo.connect(vibGain); vibGain.connect(osc.frequency); vibLfo.start(time);
+      const env=ac.createGain(),dur=beatSec*0.5;
+      env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.22,time+0.03); env.gain.exponentialRampToValueAtTime(0.001,time+dur);
+      osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+dur+0.05); vibLfo.stop(time+dur+0.05);
       currentNodes.push(osc,vibLfo,vibGain,env);
     }
-
-    const stepSec = beatSec * 0.5;
-    let nextStep = ac.currentTime + 0.1;
-    function scheduler() {
-      while(nextStep < ac.currentTime + 0.4) {
-        schedNote(nextStep);
-        nextStep += stepSec;
-      }
-    }
-    const tid = setInterval(scheduler, 100);
-    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+    const stepSec=beatSec*0.5; let nextStep=ac.currentTime+0.1;
+    function scheduler(){while(nextStep<ac.currentTime+0.4){schedNote(nextStep);nextStep+=stepSec}}
+    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
   }
 
-  // ── Аккорды (пэд) ──
-  function makePad(rootHz, scale, bpm, output, rng) {
-    const ac = ensureCtx();
-    const chordDur = (60/bpm) * 4;
-    const chordSteps = [
-      [0, scale[2]||3, scale[4]||7],
-      [scale[1]||2, scale[3]||5, scale[5]||9],
-      [scale[2]||3, scale[4]||7, scale[6]||11],
-      [0, scale[2]||3, scale[4]||7],
-    ];
-    let chordIdx = Math.floor(rng()*chordSteps.length);
-
-    function schedChord(time) {
-      const steps = chordSteps[chordIdx % chordSteps.length];
-      chordIdx++;
-      steps.forEach(step => {
-        const osc = ac.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = rootHz * Math.pow(2, step/12);
-        const env = ac.createGain();
-        env.gain.setValueAtTime(0, time);
-        env.gain.linearRampToValueAtTime(0.07, time+0.4);
-        env.gain.setValueAtTime(0.07, time+chordDur-0.5);
-        env.gain.linearRampToValueAtTime(0, time+chordDur);
-        osc.connect(env); env.connect(output);
-        osc.start(time); osc.stop(time+chordDur+0.1);
-        currentNodes.push(osc,env);
+  function makePad(rootHz,scale,bpm,output,rng){
+    const ac=ensureCtx(),chordDur=(60/bpm)*4;
+    const chordSteps=[[0,scale[2]||3,scale[4]||7],[scale[1]||2,scale[3]||5,scale[5]||9],[scale[2]||3,scale[4]||7,scale[6]||11],[0,scale[2]||3,scale[4]||7]];
+    let chordIdx=Math.floor(rng()*chordSteps.length);
+    function schedChord(time){
+      const steps=chordSteps[chordIdx%chordSteps.length]; chordIdx++;
+      steps.forEach(step=>{
+        const osc=ac.createOscillator(); osc.type='sine'; osc.frequency.value=rootHz*Math.pow(2,step/12);
+        const env=ac.createGain(); env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.07,time+0.4); env.gain.setValueAtTime(0.07,time+chordDur-0.5); env.gain.linearRampToValueAtTime(0,time+chordDur);
+        osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+chordDur+0.1); currentNodes.push(osc,env);
       });
     }
-
-    let nextChord = ac.currentTime + 0.05;
-    function scheduler() {
-      while(nextChord < ac.currentTime + 0.5) {
-        schedChord(nextChord);
-        nextChord += chordDur;
-      }
-    }
-    const tid = setInterval(scheduler, 200);
-    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+    let nextChord=ac.currentTime+0.05;
+    function scheduler(){while(nextChord<ac.currentTime+0.5){schedChord(nextChord);nextChord+=chordDur}}
+    const tid=setInterval(scheduler,200); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
   }
 
-  // ── Барабаны (hi-hat + kick) ──
-  function makeDrums(bpm, output, rng) {
-    const ac = ensureCtx();
-    const beatSec = 60/bpm;
-
-    function makeKick(time) {
-      const osc = ac.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(160, time);
-      osc.frequency.exponentialRampToValueAtTime(40, time+0.15);
-      const env = ac.createGain();
-      env.gain.setValueAtTime(0.35, time);
-      env.gain.exponentialRampToValueAtTime(0.001, time+0.18);
-      osc.connect(env); env.connect(output);
-      osc.start(time); osc.stop(time+0.2);
-      currentNodes.push(osc,env);
+  function makeDrums(bpm,output,rng){
+    const ac=ensureCtx(),beatSec=60/bpm;
+    function makeKick(time){
+      const osc=ac.createOscillator(); osc.type='sine'; osc.frequency.setValueAtTime(160,time); osc.frequency.exponentialRampToValueAtTime(40,time+0.15);
+      const env=ac.createGain(); env.gain.setValueAtTime(0.35,time); env.gain.exponentialRampToValueAtTime(0.001,time+0.18);
+      osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+0.2); currentNodes.push(osc,env);
     }
-
-    function makeHat(time, loud=false) {
-      const bufSize = Math.floor(ac.sampleRate * 0.06);
-      const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
-      const d = buf.getChannelData(0);
-      for(let i=0;i<bufSize;i++) d[i]=(Math.random()-0.5)*2;
-      const src = ac.createBufferSource(); src.buffer=buf;
-      const hpf = ac.createBiquadFilter(); hpf.type='highpass'; hpf.frequency.value=7000;
-      const env = ac.createGain();
-      env.gain.setValueAtTime(loud?0.12:0.06, time);
-      env.gain.exponentialRampToValueAtTime(0.001, time+0.05);
-      src.connect(hpf); hpf.connect(env); env.connect(output);
-      src.start(time); src.stop(time+0.07);
-      currentNodes.push(src,hpf,env);
+    function makeHat(time,loud=false){
+      const bufSize=Math.floor(ac.sampleRate*0.06),buf=ac.createBuffer(1,bufSize,ac.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<bufSize;i++)d[i]=(Math.random()-0.5)*2;
+      const src=ac.createBufferSource(); src.buffer=buf;
+      const hpf=ac.createBiquadFilter(); hpf.type='highpass'; hpf.frequency.value=7000;
+      const env=ac.createGain(); env.gain.setValueAtTime(loud?0.12:0.06,time); env.gain.exponentialRampToValueAtTime(0.001,time+0.05);
+      src.connect(hpf); hpf.connect(env); env.connect(output); src.start(time); src.stop(time+0.07); currentNodes.push(src,hpf,env);
     }
-
-    let beat=0, nextTime=ac.currentTime+0.1;
-    function scheduler() {
-      while(nextTime < ac.currentTime+0.35) {
-        const b = beat%8;
-        if(b===0||b===4) makeKick(nextTime);
-        // hi-hat на каждую восьмую с вероятностью
-        if(rng()>0.2) makeHat(nextTime, b%2===0);
-        nextTime += beatSec*0.5;
-        beat++;
+    let beat=0,nextTime=ac.currentTime+0.1;
+    function scheduler(){
+      while(nextTime<ac.currentTime+0.35){
+        const b=beat%8; if(b===0||b===4)makeKick(nextTime); if(rng()>0.2)makeHat(nextTime,b%2===0);
+        nextTime+=beatSec*0.5; beat++;
       }
     }
-    const tid=setInterval(scheduler, 100);
-    currentNodes.push({ stop:()=>clearInterval(tid), disconnect:()=>{} });
+    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
   }
 
-  // ── Визуализатор (анализ спектра) ──
-  function startVisualizer(cb) {
-    if(!analyser) return;
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    vizCallback = cb;
-    function loop() {
-      animFrame = requestAnimationFrame(loop);
-      analyser.getByteFrequencyData(data);
-      if(vizCallback) vizCallback(data);
-    }
+  function startVisualizer(cb){
+    if(!analyser)return;
+    const data=new Uint8Array(analyser.frequencyBinCount);
+    vizCallback=cb;
+    function loop(){animFrame=requestAnimationFrame(loop);analyser.getByteFrequencyData(data);if(vizCallback)vizCallback(data)}
     loop();
   }
 
-  // ── Главная функция: играть музыку для кота ──
-  function playCat(catId, onVizUpdate) {
-    stopAll();
-    ensureCtx();
-
-    const rng = seededRand(hashStr(catId));
-
-    // Параметры трека на основе ID
-    const ROOTS = [261.63, 293.66, 311.13, 329.63, 349.23, 392.00, 415.30, 440.00];
-    const rootHz = ROOTS[Math.floor(rng()*ROOTS.length)];
-    const scaleName = SCALE_NAMES[Math.floor(rng()*SCALE_NAMES.length)];
-    const scale = SCALES[scaleName];
-    const bpm = 70 + Math.floor(rng()*25); // 70–95 BPM (lofi темп)
-
-    const chain = makeLofiChain(masterGain);
-
-    makePad(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'pad')));
-    makeBass(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'bass')));
-    makeMelody(rootHz, scale, bpm, chain, seededRand(hashStr(catId+'mel')));
-    makeDrums(bpm, chain, seededRand(hashStr(catId+'drum')));
-    makeVinylNoise(chain, seededRand(hashStr(catId+'noise')));
-
-    // Генерируем название трека
-    const ADJECTIVES = ['Сонный','Мурлычащий','Ночной','Тёплый','Пушистый','Ленивый','Уютный','Мечтательный'];
-    const NOUNS = ['кот FM','lofi beats','purr radio','мяу tape','нян-нян wave','котовасия'];
-    const rng2 = seededRand(hashStr(catId+'name'));
-    const trackName = ADJECTIVES[Math.floor(rng2()*ADJECTIVES.length)] + ' ' + NOUNS[Math.floor(rng2()*NOUNS.length)];
-
-    if(onVizUpdate) startVisualizer(onVizUpdate);
-
-    return { trackName, bpm, scale: scaleName };
+  function playCat(catId,onVizUpdate){
+    stopAll(); ensureCtx();
+    const rng=seededRand(hashStr(catId));
+    const ROOTS=[261.63,293.66,311.13,329.63,349.23,392.00,415.30,440.00];
+    const rootHz=ROOTS[Math.floor(rng()*ROOTS.length)];
+    const scaleName=SCALE_NAMES[Math.floor(rng()*SCALE_NAMES.length)];
+    const scale=SCALES[scaleName];
+    const bpm=70+Math.floor(rng()*25);
+    const chain=makeLofiChain(masterGain);
+    makePad(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'pad')));
+    makeBass(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'bass')));
+    makeMelody(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'mel')));
+    makeDrums(bpm,chain,seededRand(hashStr(catId+'drum')));
+    makeVinylNoise(chain,seededRand(hashStr(catId+'noise')));
+    const ADJECTIVES=['Сонный','Мурлычащий','Ночной','Тёплый','Пушистый','Ленивый','Уютный','Мечтательный'];
+    const NOUNS=['кот FM','lofi beats','purr radio','мяу tape','нян-нян wave','котовасия'];
+    const rng2=seededRand(hashStr(catId+'name'));
+    const trackName=ADJECTIVES[Math.floor(rng2()*ADJECTIVES.length)]+' '+NOUNS[Math.floor(rng2()*NOUNS.length)];
+    if(onVizUpdate)startVisualizer(onVizUpdate);
+    return{trackName,bpm,scale:scaleName};
   }
 
-  function setMute(val) {
-    muted = val;
-    if(masterGain) masterGain.gain.setTargetAtTime(muted?0:0.55, ensureCtx().currentTime, 0.05);
-  }
-  function getMuted() { return muted; }
-  function stop() { stopAll(); cancelAnimationFrame(animFrame); }
+  /* пауза / снятие паузы AudioContext */
+  function suspendAudio(){ if(ctx&&ctx.state==='running') ctx.suspend() }
+  function resumeAudio(){  if(ctx&&ctx.state==='suspended') ctx.resume() }
 
-  return { playCat, setMute, getMuted, stop };
+  function setMute(val){muted=val;if(masterGain)masterGain.gain.setTargetAtTime(muted?0:0.55,ensureCtx().currentTime,0.05)}
+  function getMuted(){return muted}
+  function stop(){stopAll();cancelAnimationFrame(animFrame)}
+
+  return{playCat,suspendAudio,resumeAudio,setMute,getMuted,stop};
 })();
-
 
 /* ════════════════════════════════════════════════
    APP STATE & HELPERS
 ════════════════════════════════════════════════ */
-const API_IMG = 'https://api.thecatapi.com/v1/images/search?mime_types=jpg,png&limit=8';
-const API_VID = 'https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=2';
-const NAMES   = ['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
-const AVATARS = ['🐈','😸','😻','😽','😼','🙀','😿','😾'];
-const CAPTIONS= ['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? Где я? 👁️'];
+const API_IMG='https://api.thecatapi.com/v1/images/search?mime_types=jpg,png&limit=8';
+const API_VID='https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=2';
+const NAMES=['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
+const AVATARS=['🐈','😸','😻','😽','😼','🙀','😿','😾'];
+const CAPTIONS=['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? Где я? 👁️'];
 
-let allCats=[], myCats=[];
+let allCats=[],myCats=[];
 let screen='feed';
-let loading=false, cooldown=false;
+let loading=false,cooldown=false;
 let currentCatId=null;
+let isPaused=false; // глобальный флаг паузы
 
-const vidObs = new IntersectionObserver(entries=>{
-  entries.forEach(e=> e.isIntersecting ? e.target.play().catch(()=>{}) : e.target.pause());
-},{ threshold:0.55 });
+const vidObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>e.isIntersecting?e.target.play().catch(()=>{}):e.target.pause());
+},{threshold:0.55});
 
-// Reel visibility observer (музыка по текущему риилу)
-let reelObs = null;
+let reelObs=null;
 
-function load(){ try{return JSON.parse(localStorage.getItem('kotoreels_v5'))||{liked:[],my:[]}}catch{return{liked:[],my:[]}} }
+function load(){try{return JSON.parse(localStorage.getItem('kotoreels_v5'))||{liked:[],my:[]}}catch{return{liked:[],my:[]}}}
 function save(){
-  try{ localStorage.setItem('kotoreels_v5', JSON.stringify({
-    liked: allCats.filter(c=>c.liked).map(c=>c.id),
-    my: myCats.filter(c=>!c.url.startsWith('blob:')),
+  try{localStorage.setItem('kotoreels_v5',JSON.stringify({
+    liked:allCats.filter(c=>c.liked).map(c=>c.id),
+    my:myCats.filter(c=>!c.url.startsWith('blob:')),
   }))}catch{}
 }
 const stored=load();
 
 const $=id=>document.getElementById(id);
-function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
-function plural(n){ const m10=n%10,m100=n%100; if(m10===1&&m100!==11)return`${n} кот`; if([2,3,4].includes(m10)&&![12,13,14].includes(m100))return`${n} кота`; return`${n} котов` }
-function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
-function toast(msg,err=false){ const t=document.createElement('div'); t.className='toast'+(err?' err':''); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2700) }
-function updateCounters(){ const txt=plural(allCats.length); $('topCounter').textContent=txt; $('sideCounter').textContent=txt }
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function plural(n){const m10=n%10,m100=n%100;if(m10===1&&m100!==11)return`${n} кот`;if([2,3,4].includes(m10)&&![12,13,14].includes(m100))return`${n} кота`;return`${n} котов`}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function toast(msg,err=false){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2700)}
+function updateCounters(){const txt=plural(allCats.length);$('topCounter').textContent=txt;$('sideCounter').textContent=txt}
 
 async function fetchJ(url,retries=2){
   for(let i=0;i<=retries;i++){
-    try{ const r=await fetch(url+'&_='+Date.now()); if(!r.ok)throw new Error(r.status); return await r.json() }
-    catch(e){ if(i===retries)throw e; await new Promise(r=>setTimeout(r,700*(i+1))) }
+    try{const r=await fetch(url+'&_='+Date.now());if(!r.ok)throw new Error(r.status);return await r.json()}
+    catch(e){if(i===retries)throw e;await new Promise(r=>setTimeout(r,700*(i+1)))}
   }
 }
 function tocat(item,idx){
   const i=allCats.length+idx;
   return{
-    id: item.id||'c_'+Date.now()+'_'+i,
-    name: NAMES[i%NAMES.length]+' '+(i+1),
+    id:item.id||'c_'+Date.now()+'_'+i,
+    name:NAMES[i%NAMES.length]+' '+(i+1),
     origin:'The Cat API',
-    avatar: AVATARS[i%AVATARS.length],
-    desc: rand(CAPTIONS),
-    url: item.url,
-    type: item.url.endsWith('.mp4')?'video':'image',
-    likes: 70+Math.floor(Math.random()*200),
-    liked: false,
+    avatar:AVATARS[i%AVATARS.length],
+    desc:rand(CAPTIONS),
+    url:item.url,
+    type:item.url.endsWith('.mp4')?'video':'image',
+    likes:70+Math.floor(Math.random()*200),
+    liked:false,
   };
 }
 
@@ -676,13 +562,13 @@ function makeMedia(cat){
   if(cat.type==='video'){
     const v=document.createElement('video');
     v.src=cat.url; v.loop=v.muted=v.playsInline=true; v.preload='auto';
-    v.onerror=()=>{ wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>видео недоступно</div>' };
+    v.onerror=()=>{wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>видео недоступно</div>'};
     v.onstalled=()=>v.load();
     wrap.appendChild(v); vidObs.observe(v);
   } else {
     const img=document.createElement('img');
     img.src=cat.url; img.loading='lazy'; img.decoding='async';
-    img.onerror=()=>{ wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>фото недоступно</div>' };
+    img.onerror=()=>{wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div>фото недоступно</div>'};
     wrap.appendChild(img);
   }
   return wrap;
@@ -691,11 +577,8 @@ function makeMedia(cat){
 function makeWaveBars(){
   const wave=document.createElement('div'); wave.className='wave-vis';
   const bars=[];
-  for(let i=0;i<7;i++){
-    const b=document.createElement('div'); b.className='wave-bar';
-    b.style.height='3px'; wave.appendChild(b); bars.push(b);
-  }
-  return { el:wave, bars };
+  for(let i=0;i<7;i++){const b=document.createElement('div');b.className='wave-bar';b.style.height='3px';wave.appendChild(b);bars.push(b)}
+  return{el:wave,bars};
 }
 
 function makeReel(cat){
@@ -704,32 +587,30 @@ function makeReel(cat){
 
   const grad=document.createElement('div'); grad.className='grad'; reel.appendChild(grad);
 
-  // Vinyl progress bar at very bottom
+  // ── ПАУЗА-ОВЕРЛЕЙ ──
+  const pauseOvr=document.createElement('div'); pauseOvr.className='pause-overlay';
+  pauseOvr.innerHTML='<div class="pause-icon">⏸️</div>';
+  reel.appendChild(pauseOvr);
+
   const vizBar=document.createElement('div'); vizBar.className='viz-bar';
   const vizProg=document.createElement('div'); vizProg.className='viz-progress'; vizBar.appendChild(vizProg);
   reel.appendChild(vizBar);
 
-  // Heart
   const hb=document.createElement('div'); hb.className='heart-burst'; hb.textContent='❤️'; reel.appendChild(hb);
 
-  // Mute button
   const muteBtn=document.createElement('button'); muteBtn.className='mute-btn';
   muteBtn.textContent=AudioEngine.getMuted()?'🔇':'🔊';
   muteBtn.addEventListener('click',e=>{
     e.stopPropagation();
-    const nowMuted=!AudioEngine.getMuted();
-    AudioEngine.setMute(nowMuted);
-    muteBtn.textContent=nowMuted?'🔇':'🔊';
-    // update all mute btns
-    document.querySelectorAll('.mute-btn').forEach(b=>b.textContent=nowMuted?'🔇':'🔊');
+    const m=!AudioEngine.getMuted();
+    AudioEngine.setMute(m);
+    document.querySelectorAll('.mute-btn').forEach(b=>b.textContent=m?'🔇':'🔊');
   });
   reel.appendChild(muteBtn);
 
-  // Wave visualizer
-  const {el:waveEl, bars:waveBars}=makeWaveBars();
+  const{el:waveEl,bars:waveBars}=makeWaveBars();
   reel.appendChild(waveEl);
 
-  // Music ticker
   const tickerWrap=document.createElement('div'); tickerWrap.className='music-ticker-wrap';
   const ticker=document.createElement('div'); ticker.className='music-ticker';
   const disc=document.createElement('div'); disc.className='music-disc'; disc.textContent='🎵';
@@ -739,20 +620,29 @@ function makeReel(cat){
   textScroll.appendChild(textInner); ticker.appendChild(disc); ticker.appendChild(textScroll);
   tickerWrap.appendChild(ticker); reel.appendChild(tickerWrap);
 
-  // Right side actions
+  // ── ПРАВЫЕ КНОПКИ: лайк / комментарий / ПОДЕЛИТЬСЯ ──
   const side=document.createElement('div'); side.className='reel-side-actions';
   side.innerHTML=`
     <div class="reel-side-btn like-side" data-id="${esc(cat.id)}">
       <div class="reel-side-icon">${cat.liked?'❤️':'🤍'}</div>
       <div class="reel-side-count like-side-count">${cat.likes}</div>
     </div>
-    <div class="reel-side-btn"><div class="reel-side-icon">💬</div><div class="reel-side-count">${Math.floor(Math.random()*80)}</div></div>
-    <div class="reel-side-btn"><div class="reel-side-icon">📤</div><div class="reel-side-count">Поделиться</div></div>
+    <div class="reel-side-btn">
+      <div class="reel-side-icon">💬</div>
+      <div class="reel-side-count">${Math.floor(Math.random()*80)}</div>
+    </div>
+    <div class="reel-side-btn share-btn">
+      <div class="reel-side-icon">📤</div>
+      <div class="reel-side-count">Поделиться</div>
+    </div>
   `;
-  side.querySelector('.like-side').addEventListener('click',e=>{ e.stopPropagation(); doLike(cat.id,reel) });
+  side.querySelector('.like-side').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)});
+  side.querySelector('.share-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    openShare(allCats.indexOf(cat)+1);
+  });
   reel.appendChild(side);
 
-  // Footer
   const footer=document.createElement('div'); footer.className='reel-footer';
   footer.innerHTML=`
     <div class="cat-row">
@@ -767,54 +657,80 @@ function makeReel(cat){
         <span class="li">${cat.liked?'❤️':'🤍'}</span><span class="lc">${cat.likes}</span>
       </button>
       <button class="pill">💬 0</button>
-      <button class="pill">📤</button>
+      <button class="pill share-pill-btn">📤 Поделиться</button>
     </div>
   `;
-  footer.querySelector('.like-pill').addEventListener('click',e=>{ e.stopPropagation(); doLike(cat.id,reel) });
+  footer.querySelector('.like-pill').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)});
+  footer.querySelector('.share-pill-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    openShare(allCats.indexOf(cat)+1);
+  });
   reel.appendChild(footer);
 
-  // Double tap
-  let last=0;
-  reel.addEventListener('click',()=>{
+  // ── ТАП: одиночный = пауза, двойной = лайк ──
+  let lastTap=0;
+  reel.addEventListener('click',e=>{
+    // игнорируем клики по кнопкам
+    if(e.target.closest('.mute-btn,.reel-side-actions,.reel-bottom-bar')) return;
+
     const now=Date.now();
-    if(now-last<300){ if(!cat.liked)doLike(cat.id,reel); hb.classList.remove('pop'); void hb.offsetWidth; hb.classList.add('pop') }
-    last=now;
+    if(now-lastTap<300){
+      // ДВОЙНОЙ ТАП → лайк
+      if(!cat.liked) doLike(cat.id,reel);
+      hb.classList.remove('pop'); void hb.offsetWidth; hb.classList.add('pop');
+    } else {
+      // ОДИНОЧНЫЙ ТАП → пауза/снятие
+      if(currentCatId===cat.id){
+        isPaused=!isPaused;
+        if(isPaused){
+          AudioEngine.suspendAudio();
+          disc.classList.remove('playing');
+          pauseOvr.classList.add('show');
+          // пауза видео если есть
+          reel.querySelector('video')?.pause();
+        } else {
+          AudioEngine.resumeAudio();
+          disc.classList.add('playing');
+          pauseOvr.classList.remove('show');
+          reel.querySelector('video')?.play().catch(()=>{});
+        }
+      }
+    }
+    lastTap=now;
   });
 
-  // ── Запуск музыки при видимости ──
-  let vizAnimId=null;
   let progVal=0;
-  let trackInfo=null;
 
-  reel._startMusic = () => {
+  reel._startMusic=()=>{
     if(currentCatId===cat.id) return;
     currentCatId=cat.id;
+    isPaused=false;
+    pauseOvr.classList.remove('show');
     disc.classList.add('playing');
 
-    trackInfo = AudioEngine.playCat(cat.id, (freqData)=>{
-      // Обновляем wave bars
+    const trackInfo=AudioEngine.playCat(cat.id,(freqData)=>{
       const bands=[0,1,2,4,6,8,12];
       bands.forEach((b,i)=>{
         const v=freqData[b]||0;
-        const h=Math.max(3, (v/255)*26);
+        const h=Math.max(3,(v/255)*26);
         if(waveBars[i]) waveBars[i].style.height=h+'px';
       });
-      // Крутим прогресс бар (simulated)
       progVal=(progVal+0.03)%100;
       vizProg.style.width=progVal+'%';
     });
 
     if(trackInfo){
       const label=`♫ ${trackInfo.trackName} • ${trackInfo.bpm} BPM • ${trackInfo.scale}`;
-      textInner.textContent=label+'   '+label; // дублируем для плавного скролла
+      textInner.textContent=label+'   '+label;
       textInner.classList.add('scrolling');
     }
   };
 
-  reel._stopMusic = () => {
+  reel._stopMusic=()=>{
     disc.classList.remove('playing');
     textInner.classList.remove('scrolling');
     waveBars.forEach(b=>b.style.height='3px');
+    pauseOvr.classList.remove('show');
   };
 
   return reel;
@@ -824,9 +740,9 @@ function doLike(id,reel){
   const cat=allCats.find(c=>c.id===id); if(!cat)return;
   cat.liked=!cat.liked; cat.likes+=cat.liked?1:-1; save();
   const pill=reel.querySelector('.like-pill');
-  if(pill){ pill.classList.toggle('liked',cat.liked); pill.querySelector('.li').textContent=cat.liked?'❤️':'🤍'; pill.querySelector('.lc').textContent=cat.likes }
+  if(pill){pill.classList.toggle('liked',cat.liked);pill.querySelector('.li').textContent=cat.liked?'❤️':'🤍';pill.querySelector('.lc').textContent=cat.likes}
   const side=reel.querySelector('.like-side');
-  if(side){ side.querySelector('.reel-side-icon').textContent=cat.liked?'❤️':'🤍'; side.querySelector('.like-side-count').textContent=cat.likes }
+  if(side){side.querySelector('.reel-side-icon').textContent=cat.liked?'❤️':'🤍';side.querySelector('.like-side-count').textContent=cat.likes}
 }
 
 /* ════════════════════════════════════════════════
@@ -834,40 +750,39 @@ function doLike(id,reel){
 ════════════════════════════════════════════════ */
 function renderFeed(scrollToId=null){
   const area=$('contentArea'); area.innerHTML='';
-  if(reelObs){ reelObs.disconnect(); reelObs=null }
-  AudioEngine.stop(); currentCatId=null;
+  if(reelObs){reelObs.disconnect();reelObs=null}
+  AudioEngine.stop(); currentCatId=null; isPaused=false;
 
   const feed=document.createElement('div'); feed.className='feed'; feed.id='feed';
   const reels=[];
-  allCats.forEach(c=>{ const r=makeReel(c); reels.push(r); feed.appendChild(r) });
+  allCats.forEach(c=>{const r=makeReel(c);reels.push(r);feed.appendChild(r)});
   area.appendChild(feed);
   updateCounters();
 
-  // Intersection observer — запускает музыку для видимого рила
-  reelObs = new IntersectionObserver(entries=>{
+  reelObs=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       const r=entry.target;
-      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
-        r._startMusic && r._startMusic();
+      if(entry.isIntersecting&&entry.intersectionRatio>0.6){
+        isPaused=false;
+        r._startMusic&&r._startMusic();
       } else {
         if(r.dataset.id===currentCatId){
-          r._stopMusic && r._stopMusic();
+          r._stopMusic&&r._stopMusic();
           currentCatId=null;
         }
       }
     });
-  },{ threshold:[0.6] });
+  },{threshold:[0.6]});
 
   reels.forEach(r=>reelObs.observe(r));
 
-  // Infinite scroll sentinel
   const sentinel=document.createElement('div'); sentinel.style.height='4px'; feed.appendChild(sentinel);
   new IntersectionObserver(entries=>{
     if(entries[0].isIntersecting&&!loading&&!cooldown&&screen==='feed') loadMore();
-  },{ root:feed, threshold:0.1 }).observe(sentinel);
+  },{root:feed,threshold:0.1}).observe(sentinel);
 
   if(scrollToId){
-    requestAnimationFrame(()=>{ feed.querySelector(`[data-id="${scrollToId}"]`)?.scrollIntoView({behavior:'smooth'}) });
+    requestAnimationFrame(()=>{feed.querySelector(`[data-id="${scrollToId}"]`)?.scrollIntoView({behavior:'smooth'})});
   }
 }
 
@@ -876,18 +791,18 @@ async function loadMore(){
   const feed=$('feed'); const sentinel=feed?.lastElementChild;
   const ls=document.createElement('div'); ls.className='loading-slide'; ls.id='ls';
   ls.innerHTML='<div class="spinner"></div><span>Загружаем котов…</span>';
-  if(feed&&sentinel) feed.insertBefore(ls,sentinel);
+  if(feed&&sentinel)feed.insertBefore(ls,sentinel);
   try{
     const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG,1),fetchJ(API_VID,1)]);
     let raw=[]; if(ir.status==='fulfilled')raw.push(...ir.value); if(vr.status==='fulfilled')raw.push(...vr.value);
-    if(!raw.length){ cooldown=true; toast('Не удалось загрузить котов 😿',true); setTimeout(()=>cooldown=false,10000) }
+    if(!raw.length){cooldown=true;toast('Не удалось загрузить котов 😿',true);setTimeout(()=>cooldown=false,10000)}
     else{
       const cats=raw.map((x,i)=>tocat(x,i)); allCats.push(...cats);
-      if(feed&&sentinel) cats.forEach(c=>{ const r=makeReel(c); reelObs?.observe(r); feed.insertBefore(r,ls) });
+      if(feed&&sentinel)cats.forEach(c=>{const r=makeReel(c);reelObs?.observe(r);feed.insertBefore(r,ls)});
       updateCounters(); toast(`➕ +${cats.length} котов`);
     }
-  }catch{ toast('Ошибка соединения 😿',true); cooldown=true; setTimeout(()=>cooldown=false,10000) }
-  finally{ $('ls')?.remove(); loading=false }
+  }catch{toast('Ошибка соединения 😿',true);cooldown=true;setTimeout(()=>cooldown=false,10000)}
+  finally{$('ls')?.remove();loading=false}
 }
 
 async function init(){
@@ -897,14 +812,14 @@ async function init(){
     let raw=[];
     if(ir.status==='fulfilled')raw.push(...ir.value);
     if(vr.status==='fulfilled')raw.push(...vr.value);
-    if(raw.length) allCats.push(...raw.map((x,i)=>tocat(x,i)));
+    if(raw.length)allCats.push(...raw.map((x,i)=>tocat(x,i)));
     else allCats.push({id:'fb',name:'Котик',origin:'резерв',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
   }catch{
     allCats.push({id:'fb',name:'Котик',origin:'офлайн',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
-  } finally{ loading=false }
+  }finally{loading=false}
 
-  if(stored.liked) allCats.forEach(c=>{ if(stored.liked.includes(c.id))c.liked=true });
-  if(stored.my?.length) stored.my.forEach(c=>{
+  if(stored.liked)allCats.forEach(c=>{if(stored.liked.includes(c.id))c.liked=true});
+  if(stored.my?.length)stored.my.forEach(c=>{
     if(!c.url?.startsWith('blob:')&&!allCats.find(x=>x.id===c.id)){
       const r={...c,liked:stored.liked?.includes(c.id)||false};
       allCats.unshift(r); myCats.push(r);
@@ -917,9 +832,8 @@ async function init(){
    PROFILE
 ════════════════════════════════════════════════ */
 function renderProfile(){
-  if(reelObs){ reelObs.disconnect(); reelObs=null }
-  AudioEngine.stop(); currentCatId=null;
-
+  if(reelObs){reelObs.disconnect();reelObs=null}
+  AudioEngine.stop(); currentCatId=null; isPaused=false;
   const area=$('contentArea'); area.innerHTML='';
   const liked=allCats.filter(c=>c.liked).length;
   const wrap=document.createElement('div'); wrap.className='profile-wrap';
@@ -966,17 +880,17 @@ function renderProfile(){
       grid.appendChild(cell);
     });
   }
-  tabs.forEach(t=>t.addEventListener('click',()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); activeTab=t.dataset.tab; renderGrid(activeTab) }));
+  tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');activeTab=t.dataset.tab;renderGrid(activeTab)}));
   renderGrid('my');
 }
 
 /* ════════════════════════════════════════════════
-   SCREEN SWITCH & EVENTS
+   NAVIGATION & EVENTS
 ════════════════════════════════════════════════ */
 function setScreen(s,scrollToId=null){
   screen=s;
   document.querySelectorAll('[data-screen]').forEach(el=>el.classList.toggle('active',el.dataset.screen===s));
-  if(s==='feed') renderFeed(scrollToId);
+  if(s==='feed')renderFeed(scrollToId);
   else renderProfile();
 }
 document.querySelectorAll('[data-screen]').forEach(btn=>btn.addEventListener('click',()=>setScreen(btn.dataset.screen)));
@@ -987,7 +901,7 @@ function addCat({url,name,origin,avatar,type}){
   myCats.push(cat); allCats.unshift(cat); save();
   if(screen==='feed'){
     const feed=$('feed');
-    if(feed){ const r=makeReel(cat); reelObs?.observe(r); feed.prepend(r); feed.scrollTo({top:0,behavior:'smooth'}) }
+    if(feed){const r=makeReel(cat);reelObs?.observe(r);feed.prepend(r);feed.scrollTo({top:0,behavior:'smooth'})}
     else renderFeed();
   }
   updateCounters(); toast(`🐱 ${cat.name} добавлен!`);
