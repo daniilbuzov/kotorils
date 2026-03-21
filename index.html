@@ -317,49 +317,7 @@ const translations = {
   empty: {ru: 'пусто', en: 'empty'},
   liked: {ru: 'Лайкнутые', en: 'Liked'},
   search: {ru: 'Поиск…', en: 'Search…'},
-  linkText: {ru: 'Ссылка на кота', en: 'Cat link'},
-  
-  // Имена котов
-  murzik: {ru: 'Мурзик', en: 'Murk'},
-  barsik: {ru: 'Барсик', en: 'Barsik'},
-  snezhok: {ru: 'Снежок', en: 'Snowball'},
-  ryzhik: {ru: 'Рыжик', en: 'Ginger'},
-  pushok: {ru: 'Пушок', en: 'Fluffy'},
-  keks: {ru: 'Кекс', en: 'Cake'},
-  feliks: {ru: 'Феликс', en: 'Felix'},
-  tom: {ru: 'Том', en: 'Tom'},
-  leopold: {ru: 'Леопольд', en: 'Leopold'},
-  simba: {ru: 'Симба', en: 'Simba'},
-  persik: {ru: 'Персик', en: 'Peach'},
-  bublik: {ru: 'Бублик', en: 'Bagel'},
-  
-  // Описания (captions)
-  caption1: {ru: 'Охраняю диван 🛡️', en: 'Guarding sofa 🛡️'},
-  caption2: {ru: 'Философствую 🤔', en: 'Thinking deep 🤔'},
-  caption3: {ru: 'Жду еду ⏳', en: 'Waiting for food ⏳'},
-  caption4: {ru: 'Шеф, всё пропало 😿', en: 'It\'s all lost 😿'},
-  caption5: {ru: 'Просто лежу 😴', en: 'Just chilling 😴'},
-  caption6: {ru: 'Кто я? 👁️', en: 'Who am I? 👁️'},
-  
-  // Имена ботов
-  botMurzik: {ru: 'Мурзик_bot', en: 'Murk_bot'},
-  botBarsik: {ru: 'Барсик_bot', en: 'Barsik_bot'},
-  botSnezhok: {ru: 'Снежок_bot', en: 'Snowball_bot'},
-  botRyzhik: {ru: 'Рыжик_bot', en: 'Ginger_bot'},
-  botPushok: {ru: 'Пушок_bot', en: 'Fluffy_bot'},
-  botKeks: {ru: 'Кекс_bot', en: 'Cake_bot'},
-  botFeliks: {ru: 'Феликс_bot', en: 'Felix_bot'},
-  botTom: {ru: 'Том_bot', en: 'Tom_bot'},
-  botSimba: {ru: 'Симба_bot', en: 'Simba_bot'},
-  botPersik: {ru: 'Персик_bot', en: 'Peach_bot'},
-  
-  // Сообщения ботов
-  botMsg1: {ru: 'Мяу! 🐱', en: 'Meow! 🐱'},
-  botMsg2: {ru: 'Красиво! 😻', en: 'Beautiful! 😻'},
-  botMsg3: {ru: 'Обожаю! ❤️', en: 'Love it! ❤️'},
-  botMsg4: {ru: 'Мур-мур! 🎵', en: 'Purr! 🎵'},
-  botMsg5: {ru: 'Супер! 💣', en: 'Amazing! 💣'},
-  botMsg6: {ru: 'Спасибо! 🙏', en: 'Thanks! 🙏'}
+  linkText: {ru: 'Ссылка на кота', en: 'Cat link'}
 };
 
 let lang = localStorage.getItem('lang') || 'ru';
@@ -368,40 +326,33 @@ const t = (key) => translations[key]?.[lang] || key;
 
 function applyTranslations() {
   // Sidebar
-  if(document.getElementById('nav1')) document.getElementById('nav1').textContent = t('feed');
-  if(document.getElementById('nav2')) document.getElementById('nav2').textContent = t('profile');
-  if(document.getElementById('sideCounter')) document.getElementById('sideCounter').textContent = '0 ' + t('my');
-  if(document.getElementById('sideSearchInp')) document.getElementById('sideSearchInp').placeholder = t('search');
-  if(document.getElementById('sideUrl')) document.getElementById('sideUrl').placeholder = t('linkText');
+  document.getElementById('nav1').textContent = t('feed');
+  document.getElementById('nav2').textContent = t('profile');
+  document.getElementById('sideCounter').textContent = '0 ' + t('my');
+  document.getElementById('sideSearchInp').placeholder = t('search');
+  document.getElementById('sideUrl').placeholder = t('linkText');
   
   // Bottom nav
-  if(document.getElementById('bnav1')) document.getElementById('bnav1').textContent = t('feed');
-  if(document.getElementById('bnav2')) document.getElementById('bnav2').textContent = t('profile');
+  document.getElementById('bnav1').textContent = t('feed');
+  document.getElementById('bnav2').textContent = t('profile');
   
   // Main inputs
-  if(document.getElementById('searchInp')) document.getElementById('searchInp').placeholder = 'ID…';
-  if(document.getElementById('urlInp')) document.getElementById('urlInp').placeholder = t('linkText');
-  if(document.getElementById('commentInp')) document.getElementById('commentInp').placeholder = 'Мяу…';
-  if(document.getElementById('profileNick')) document.getElementById('profileNick').placeholder = 'Ник';
+  document.getElementById('searchInp').placeholder = 'ID…';
+  document.getElementById('urlInp').placeholder = t('linkText');
+  document.getElementById('commentInp').placeholder = 'Мяу…';
+  document.getElementById('profileNick').placeholder = 'Ник';
   
   // Titles
-  if(document.getElementById('shareTitle')) document.getElementById('shareTitle').textContent = t('share');
-  if(document.getElementById('commentsTitle')) document.getElementById('commentsTitle').textContent = t('comments');
-  if(document.getElementById('settingsTitle')) document.getElementById('settingsTitle').textContent = '⚙️ ' + t('settings');
-  if(document.getElementById('editProfileTitle')) document.getElementById('editProfileTitle').textContent = '✏️ ' + t('editProfile');
+  document.getElementById('shareTitle').textContent = t('share');
+  document.getElementById('commentsTitle').textContent = t('comments');
+  document.getElementById('settingsTitle').textContent = '⚙️ ' + t('settings');
+  document.getElementById('editProfileTitle').textContent = '✏️ ' + t('editProfile');
   
   // Buttons
-  if(document.getElementById('shareCloseBtn')) document.getElementById('shareCloseBtn').textContent = t('close');
-  if(document.getElementById('nickLabel')) document.getElementById('nickLabel').textContent = t('nickname');
-  if(document.getElementById('emojiLabel')) document.getElementById('emojiLabel').textContent = t('chooseEmoji');
-  if(document.getElementById('profileSaveBtn')) document.getElementById('profileSaveBtn').textContent = t('save');
-  
-  // Обновляем интерфейс при смене языка
-  if(screen === 'feed') {
-    renderFeed();
-  } else if(screen === 'profile') {
-    renderProfile();
-  }
+  document.getElementById('shareCloseBtn').textContent = t('close');
+  document.getElementById('nickLabel').textContent = t('nickname');
+  document.getElementById('emojiLabel').textContent = t('chooseEmoji');
+  document.getElementById('profileSaveBtn').textContent = t('save');
 }
 
 // ════ WEB AUDIO ENGINE ════
@@ -577,19 +528,18 @@ function saveProfile() {
 }
 
 // ════ БОТЫ ════
+const BOT_NAMES = ['Мурзик', 'Барсик', 'Снежок', 'Рыжик', 'Пушок', 'Кекс', 'Феликс', 'Том', 'Симба', 'Персик'];
 const BOT_EMOJIS = ['😸', '😻', '😽', '😼', '🙀', '😿', '😾', '😺'];
+const BOT_MESSAGES = ['Мяу! 🐱', 'Красиво! 😻', 'Обожаю! ❤️', 'Мур-мур! 🎵', 'Супер! 💣', 'Спасибо! 🙏'];
 
 function generateBotComments(count = 2) {
   const comments = [];
-  const botNames = getBOT_NAMES();
-  const botMessages = getBOT_MESSAGES();
-  
   for(let i = 0; i < count; i++) {
     comments.push({
-      text: botMessages[Math.floor(Math.random() * botMessages.length)],
-      author: botNames[Math.floor(Math.random() * botNames.length)] + '_bot',
+      text: BOT_MESSAGES[Math.floor(Math.random() * BOT_MESSAGES.length)],
+      author: BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)] + '_bot',
       emoji: BOT_EMOJIS[Math.floor(Math.random() * BOT_EMOJIS.length)],
-      time: new Date().toLocaleTimeString(lang === 'ru' ? 'ru' : 'en', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
       isBot: true
     });
   }
@@ -616,7 +566,7 @@ const CommentsEngine = (() => {
       text: text.trim(),
       author: userProfile.nick,
       emoji: userProfile.emoji,
-      time: now.toLocaleTimeString(lang === 'ru' ? 'ru' : 'en', { hour: '2-digit', minute: '2-digit' }),
+      time: now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
       isBot: false
     };
     commentData[catId].push(comment);
@@ -896,23 +846,9 @@ document.getElementById('profileEditClose').addEventListener('click', () => {
 // ════ ОСНОВНОЙ КОД ════
 const API_IMG='https://api.thecatapi.com/v1/images/search?mime_types=jpg,png,gif&limit=13';
 const API_VID='https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=4';
-const NAMES_RU=['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
-const NAMES_EN=['Murk','Barsik','Snowball','Ginger','Fluffy','Cake','Felix','Tom','Leopold','Simba','Peach','Bagel'];
-const getNAMES=()=>lang==='ru'?NAMES_RU:NAMES_EN;
-
-const CAPTIONS_RU=['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? 👁️'];
-const CAPTIONS_EN=['Guarding sofa 🛡️','Thinking deep 🤔','Waiting for food ⏳','It\'s all lost 😿','Just chilling 😴','Who am I? 👁️'];
-const getCAPTIONS=()=>lang==='ru'?CAPTIONS_RU:CAPTIONS_EN;
-
-const BOT_NAMES_RU = ['Мурзик', 'Барсик', 'Снежок', 'Рыжик', 'Пушок', 'Кекс', 'Феликс', 'Том', 'Симба', 'Персик'];
-const BOT_NAMES_EN = ['Murk', 'Barsik', 'Snowball', 'Ginger', 'Fluffy', 'Cake', 'Felix', 'Tom', 'Simba', 'Peach'];
-const getBOT_NAMES=()=>lang==='ru'?BOT_NAMES_RU:BOT_NAMES_EN;
-
-const BOT_MESSAGES_RU = ['Мяу! 🐱', 'Красиво! 😻', 'Обожаю! ❤️', 'Мур-мур! 🎵', 'Супер! 💣', 'Спасибо! 🙏'];
-const BOT_MESSAGES_EN = ['Meow! 🐱', 'Beautiful! 😻', 'Love it! ❤️', 'Purr! 🎵', 'Amazing! 💣', 'Thanks! 🙏'];
-const getBOT_MESSAGES=()=>lang==='ru'?BOT_MESSAGES_RU:BOT_MESSAGES_EN;
-
+const NAMES=['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
 const AVATARS=['🐈','😸','😻','😽','😼','🙀','😿','😾'];
+const CAPTIONS=['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? 👁️'];
 
 let allCats=[],myCats=[];
 let screen='feed';
@@ -971,15 +907,13 @@ function makeShortId(seed) {
 function tocat(item,idx){
   const i=allCats.length+idx;
   const rawId=item.id||'c_'+Date.now()+'_'+i;
-  const names = getNAMES();
-  const captions = getCAPTIONS();
   return{
     id: rawId,
     shortId: makeShortId(rawId),
-    name:names[i%names.length]+' '+(i+1),
+    name:NAMES[i%NAMES.length]+' '+(i+1),
     origin:'The Cat API',
     avatar:AVATARS[i%AVATARS.length],
-    desc:rand(captions),
+    desc:rand(CAPTIONS),
     url:item.url,
     type:item.url.endsWith('.mp4')?'video':'image',
     likes:70+Math.floor(Math.random()*200),
