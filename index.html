@@ -286,7 +286,7 @@ input,textarea,select{border:none;background:none;color:inherit;font:inherit;out
 'use strict';
 (() => {
 
-// ════ ЛОКАЛИЗАЦИЯ ════
+// ========== ЛОКАЛИЗАЦИЯ ==========
 const translations = {
   feed: {ru: 'Лента', en: 'Feed'},
   profile: {ru: 'Профиль', en: 'Profile'},
@@ -317,7 +317,16 @@ const translations = {
   empty: {ru: 'пусто', en: 'empty'},
   liked: {ru: 'Лайкнутые', en: 'Liked'},
   search: {ru: 'Поиск…', en: 'Search…'},
-  linkText: {ru: 'Ссылка на кота', en: 'Cat link'}
+  linkText: {ru: 'Ссылка на кота', en: 'Cat link'},
+  loadingCats: {ru: 'Загружаем котов...', en: 'Loading cats...'},
+  insertLink: {ru: 'Вставь ссылку', en: 'Insert link'},
+  catNotFound: {ru: 'Кот не найден', en: 'Cat not found'},
+  bannedMsg: {ru: 'Вы забанены и не можете добавлять котов', en: 'You are banned and cannot add cats'},
+  userBanned: {ru: 'Пользователь забанен, контент удалён', en: 'User banned, content removed'},
+  userUnbanned: {ru: 'Пользователь разбанен', en: 'User unbanned'},
+  banPrompt: {ru: 'Введите ник для бана:', en: 'Enter nickname to ban:'},
+  unbanPrompt: {ru: 'Введите ник для разбана:', en: 'Enter nickname to unban:'},
+  selfBan: {ru: 'Нельзя забанить самого себя', en: 'Cannot ban yourself'}
 };
 
 let lang = localStorage.getItem('lang') || 'ru';
@@ -325,575 +334,141 @@ let theme = localStorage.getItem('theme') || 'dark-mode';
 const t = (key) => translations[key]?.[lang] || key;
 
 function applyTranslations() {
-  // Sidebar
-  document.getElementById('nav1').textContent = t('feed');
-  document.getElementById('nav2').textContent = t('profile');
-  document.getElementById('sideCounter').textContent = '0 ' + t('my');
-  document.getElementById('sideSearchInp').placeholder = t('search');
-  document.getElementById('sideUrl').placeholder = t('linkText');
-  
-  // Bottom nav
-  document.getElementById('bnav1').textContent = t('feed');
-  document.getElementById('bnav2').textContent = t('profile');
-  
-  // Main inputs
-  document.getElementById('searchInp').placeholder = 'ID…';
-  document.getElementById('urlInp').placeholder = t('linkText');
-  document.getElementById('commentInp').placeholder = 'Мяу…';
-  document.getElementById('profileNick').placeholder = 'Ник';
-  
-  // Titles
-  document.getElementById('shareTitle').textContent = t('share');
-  document.getElementById('commentsTitle').textContent = t('comments');
-  document.getElementById('settingsTitle').textContent = '⚙️ ' + t('settings');
-  document.getElementById('editProfileTitle').textContent = '✏️ ' + t('editProfile');
-  
-  // Buttons
-  document.getElementById('shareCloseBtn').textContent = t('close');
-  document.getElementById('nickLabel').textContent = t('nickname');
-  document.getElementById('emojiLabel').textContent = t('chooseEmoji');
-  document.getElementById('profileSaveBtn').textContent = t('save');
+  // обновляем только статические текстовые элементы (без перерисовки контента)
+  if(document.getElementById('nav1')) document.getElementById('nav1').textContent = t('feed');
+  if(document.getElementById('nav2')) document.getElementById('nav2').textContent = t('profile');
+  if(document.getElementById('sideCounter')) document.getElementById('sideCounter').textContent = '0 ' + t('my');
+  if(document.getElementById('sideSearchInp')) document.getElementById('sideSearchInp').placeholder = t('search');
+  if(document.getElementById('sideUrl')) document.getElementById('sideUrl').placeholder = t('linkText');
+  if(document.getElementById('bnav1')) document.getElementById('bnav1').textContent = t('feed');
+  if(document.getElementById('bnav2')) document.getElementById('bnav2').textContent = t('profile');
+  if(document.getElementById('searchInp')) document.getElementById('searchInp').placeholder = 'ID…';
+  if(document.getElementById('urlInp')) document.getElementById('urlInp').placeholder = t('linkText');
+  if(document.getElementById('commentInp')) document.getElementById('commentInp').placeholder = 'Мяу…';
+  if(document.getElementById('profileNick')) document.getElementById('profileNick').placeholder = 'Ник';
+  if(document.getElementById('shareTitle')) document.getElementById('shareTitle').textContent = t('share');
+  if(document.getElementById('commentsTitle')) document.getElementById('commentsTitle').textContent = t('comments');
+  if(document.getElementById('settingsTitle')) document.getElementById('settingsTitle').textContent = '⚙️ ' + t('settings');
+  if(document.getElementById('editProfileTitle')) document.getElementById('editProfileTitle').textContent = '✏️ ' + t('editProfile');
+  if(document.getElementById('shareCloseBtn')) document.getElementById('shareCloseBtn').textContent = t('close');
+  if(document.getElementById('nickLabel')) document.getElementById('nickLabel').textContent = t('nickname');
+  if(document.getElementById('emojiLabel')) document.getElementById('emojiLabel').textContent = t('chooseEmoji');
+  if(document.getElementById('profileSaveBtn')) document.getElementById('profileSaveBtn').textContent = t('save');
 }
 
-// ════ WEB AUDIO ENGINE ════
+// ========== АУДИО (без изменений) ==========
 const AudioEngine = (() => {
   let ctx=null,masterGain=null,currentNodes=[],muted=false,vizCallback=null,analyser=null,animFrame=null;
-
   function seededRand(seed){let s=seed;return()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff}}
   function hashStr(str){let h=5381;for(let i=0;i<str.length;i++)h=(h*33)^str.charCodeAt(i);return h>>>0}
-
   const SCALES={pentatonic:[0,2,4,7,9],minor:[0,2,3,5,7,8,10],major:[0,2,4,5,7,9,11],blues:[0,3,5,6,7,10],dorian:[0,2,3,5,7,9,10]};
   const SCALE_NAMES=Object.keys(SCALES);
-
-  function ensureCtx(){
-    if(!ctx){
-      ctx=new(window.AudioContext||window.webkitAudioContext)();
-      masterGain=ctx.createGain(); masterGain.gain.value=muted?0:0.55;
-      analyser=ctx.createAnalyser(); analyser.fftSize=64;
-      masterGain.connect(analyser); analyser.connect(ctx.destination);
-    }
-    if(ctx.state==='suspended')ctx.resume();
-    return ctx;
-  }
-
-  function stopAll(){
-    cancelAnimationFrame(animFrame);
-    currentNodes.forEach(n=>{try{n.stop&&n.stop();n.disconnect&&n.disconnect()}catch{}});
-    currentNodes=[]; vizCallback=null;
-  }
-
-  function makeLofiChain(output){
-    const ac=ensureCtx();
-    const lpf=ac.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=2200; lpf.Q.value=0.7;
-    const wet=ac.createGain(); wet.gain.value=0.18;
-    const dry=ac.createGain(); dry.gain.value=0.82;
-    lpf.connect(dry); dry.connect(output); lpf.connect(wet); wet.connect(output);
-    return lpf;
-  }
-
-  function makeVinylNoise(output,rng){
-    const ac=ensureCtx(),bufSize=ac.sampleRate*2,buf=ac.createBuffer(1,bufSize,ac.sampleRate),data=buf.getChannelData(0);
-    for(let i=0;i<bufSize;i++)data[i]=(rng()-0.5)*0.015;
-    const src=ac.createBufferSource(); src.buffer=buf; src.loop=true;
-    const g=ac.createGain(); g.gain.value=0.06;
-    src.connect(g); g.connect(output); src.start(); currentNodes.push(src,g);
-  }
-
-  function makeBass(rootHz,scale,bpm,output,rng){
-    const ac=ensureCtx(),beatSec=60/bpm,bassNotes=[0,0,scale[2]||3,scale[4]||7];
-    function schedBeat(time){
-      const note=bassNotes[Math.floor(rng()*bassNotes.length)];
-      const freq=rootHz*Math.pow(2,note/12)/2;
-      const osc=ac.createOscillator(); osc.type='triangle'; osc.frequency.setValueAtTime(freq,time);
-      const env=ac.createGain(); env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.28,time+0.02); env.gain.exponentialRampToValueAtTime(0.001,time+beatSec*0.9);
-      const lpf=ac.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=400;
-      osc.connect(lpf); lpf.connect(env); env.connect(output); osc.start(time); osc.stop(time+beatSec); currentNodes.push(osc,env,lpf);
-    }
-    let nextBeat=ac.currentTime+0.1;
-    function scheduler(){while(nextBeat<ac.currentTime+0.3){schedBeat(nextBeat);nextBeat+=beatSec*(rng()>0.7?2:1)}}
-    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
-  }
-
-  function makeMelody(rootHz,scale,bpm,output,rng){
-    const ac=ensureCtx(),beatSec=60/bpm;
-    const pattern=Array.from({length:16},(_,i)=>{if(rng()<0.3)return null;const step=scale[Math.floor(rng()*scale.length)];const octave=rng()>0.7?12:0;return step+octave});
-    let step=0;
-    function schedNote(time){
-      const note=pattern[step%pattern.length]; step++;
-      if(note===null)return;
-      const freq=rootHz*Math.pow(2,note/12);
-      const osc=ac.createOscillator(); osc.type=['sine','triangle','sine'][Math.floor(rng()*3)]; osc.frequency.setValueAtTime(freq,time);
-      const vibLfo=ac.createOscillator(); vibLfo.frequency.value=4.5+rng()*2;
-      const vibGain=ac.createGain(); vibGain.gain.value=freq*0.005;
-      vibLfo.connect(vibGain); vibGain.connect(osc.frequency); vibLfo.start(time);
-      const env=ac.createGain(),dur=beatSec*0.5;
-      env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.22,time+0.03); env.gain.exponentialRampToValueAtTime(0.001,time+dur);
-      osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+dur+0.05); vibLfo.stop(time+dur+0.05);
-      currentNodes.push(osc,vibLfo,vibGain,env);
-    }
-    const stepSec=beatSec*0.5; let nextStep=ac.currentTime+0.1;
-    function scheduler(){while(nextStep<ac.currentTime+0.4){schedNote(nextStep);nextStep+=stepSec}}
-    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
-  }
-
-  function makePad(rootHz,scale,bpm,output,rng){
-    const ac=ensureCtx(),chordDur=(60/bpm)*4;
-    const chordSteps=[[0,scale[2]||3,scale[4]||7],[scale[1]||2,scale[3]||5,scale[5]||9],[scale[2]||3,scale[4]||7,scale[6]||11],[0,scale[2]||3,scale[4]||7]];
-    let chordIdx=Math.floor(rng()*chordSteps.length);
-    function schedChord(time){
-      const steps=chordSteps[chordIdx%chordSteps.length]; chordIdx++;
-      steps.forEach(step=>{
-        const osc=ac.createOscillator(); osc.type='sine'; osc.frequency.value=rootHz*Math.pow(2,step/12);
-        const env=ac.createGain(); env.gain.setValueAtTime(0,time); env.gain.linearRampToValueAtTime(0.07,time+0.4); env.gain.setValueAtTime(0.07,time+chordDur-0.5); env.gain.linearRampToValueAtTime(0,time+chordDur);
-        osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+chordDur+0.1); currentNodes.push(osc,env);
-      });
-    }
-    let nextChord=ac.currentTime+0.05;
-    function scheduler(){while(nextChord<ac.currentTime+0.5){schedChord(nextChord);nextChord+=chordDur}}
-    const tid=setInterval(scheduler,200); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
-  }
-
-  function makeDrums(bpm,output,rng){
-    const ac=ensureCtx(),beatSec=60/bpm;
-    function makeKick(time){
-      const osc=ac.createOscillator(); osc.type='sine'; osc.frequency.setValueAtTime(160,time); osc.frequency.exponentialRampToValueAtTime(40,time+0.15);
-      const env=ac.createGain(); env.gain.setValueAtTime(0.35,time); env.gain.exponentialRampToValueAtTime(0.001,time+0.18);
-      osc.connect(env); env.connect(output); osc.start(time); osc.stop(time+0.2); currentNodes.push(osc,env);
-    }
-    function makeHat(time,loud=false){
-      const bufSize=Math.floor(ac.sampleRate*0.06),buf=ac.createBuffer(1,bufSize,ac.sampleRate),d=buf.getChannelData(0);
-      for(let i=0;i<bufSize;i++)d[i]=(Math.random()-0.5)*2;
-      const src=ac.createBufferSource(); src.buffer=buf;
-      const hpf=ac.createBiquadFilter(); hpf.type='highpass'; hpf.frequency.value=7000;
-      const env=ac.createGain(); env.gain.setValueAtTime(loud?0.12:0.06,time); env.gain.exponentialRampToValueAtTime(0.001,time+0.05);
-      src.connect(hpf); hpf.connect(env); env.connect(output); src.start(time); src.stop(time+0.07); currentNodes.push(src,hpf,env);
-    }
-    let beat=0,nextTime=ac.currentTime+0.1;
-    function scheduler(){
-      while(nextTime<ac.currentTime+0.35){
-        const b=beat%8; if(b===0||b===4)makeKick(nextTime); if(rng()>0.2)makeHat(nextTime,b%2===0);
-        nextTime+=beatSec*0.5; beat++;
-      }
-    }
-    const tid=setInterval(scheduler,100); currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});
-  }
-
-  function startVisualizer(cb){
-    if(!analyser)return;
-    const data=new Uint8Array(analyser.frequencyBinCount);
-    vizCallback=cb;
-    function loop(){animFrame=requestAnimationFrame(loop);analyser.getByteFrequencyData(data);if(vizCallback)vizCallback(data)}
-    loop();
-  }
-
-  function playCat(catId,onVizUpdate){
-    stopAll(); ensureCtx();
-    const rng=seededRand(hashStr(catId));
-    const ROOTS=[261.63,293.66,311.13,329.63,349.23,392.00,415.30,440.00];
-    const rootHz=ROOTS[Math.floor(rng()*ROOTS.length)];
-    const scaleName=SCALE_NAMES[Math.floor(rng()*SCALE_NAMES.length)];
-    const scale=SCALES[scaleName];
-    const bpm=70+Math.floor(rng()*25);
-    const chain=makeLofiChain(masterGain);
-    makePad(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'pad')));
-    makeBass(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'bass')));
-    makeMelody(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'mel')));
-    makeDrums(bpm,chain,seededRand(hashStr(catId+'drum')));
-    makeVinylNoise(chain,seededRand(hashStr(catId+'noise')));
-    const ADJECTIVES=['Сонный','Мурлычащий','Ночной','Тёплый','Пушистый','Ленивый','Уютный','Мечтательный'];
-    const NOUNS=['кот FM','lofi beats','purr radio','мяу tape','нян-нян wave','котовасия'];
-    const rng2=seededRand(hashStr(catId+'name'));
-    const trackName=ADJECTIVES[Math.floor(rng2()*ADJECTIVES.length)]+' '+NOUNS[Math.floor(rng2()*NOUNS.length)];
-    if(onVizUpdate)startVisualizer(onVizUpdate);
-    return{trackName,bpm,scale:scaleName};
-  }
-
-  function suspendAudio(){ if(ctx&&ctx.state==='running') ctx.suspend() }
-  function resumeAudio(){  if(ctx&&ctx.state==='suspended') ctx.resume() }
-
+  function ensureCtx(){if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();masterGain=ctx.createGain();masterGain.gain.value=muted?0:0.55;analyser=ctx.createAnalyser();analyser.fftSize=64;masterGain.connect(analyser);analyser.connect(ctx.destination);}if(ctx.state==='suspended')ctx.resume();return ctx;}
+  function stopAll(){cancelAnimationFrame(animFrame);currentNodes.forEach(n=>{try{n.stop&&n.stop();n.disconnect&&n.disconnect()}catch{}});currentNodes=[];vizCallback=null;}
+  function makeLofiChain(output){const ac=ensureCtx();const lpf=ac.createBiquadFilter();lpf.type='lowpass';lpf.frequency.value=2200;lpf.Q.value=0.7;const wet=ac.createGain();wet.gain.value=0.18;const dry=ac.createGain();dry.gain.value=0.82;lpf.connect(dry);dry.connect(output);lpf.connect(wet);wet.connect(output);return lpf;}
+  function makeVinylNoise(output,rng){const ac=ensureCtx(),bufSize=ac.sampleRate*2,buf=ac.createBuffer(1,bufSize,ac.sampleRate),data=buf.getChannelData(0);for(let i=0;i<bufSize;i++)data[i]=(rng()-0.5)*0.015;const src=ac.createBufferSource();src.buffer=buf;src.loop=true;const g=ac.createGain();g.gain.value=0.06;src.connect(g);g.connect(output);src.start();currentNodes.push(src,g);}
+  function makeBass(rootHz,scale,bpm,output,rng){const ac=ensureCtx(),beatSec=60/bpm,bassNotes=[0,0,scale[2]||3,scale[4]||7];function schedBeat(time){const note=bassNotes[Math.floor(rng()*bassNotes.length)];const freq=rootHz*Math.pow(2,note/12)/2;const osc=ac.createOscillator();osc.type='triangle';osc.frequency.setValueAtTime(freq,time);const env=ac.createGain();env.gain.setValueAtTime(0,time);env.gain.linearRampToValueAtTime(0.28,time+0.02);env.gain.exponentialRampToValueAtTime(0.001,time+beatSec*0.9);const lpf=ac.createBiquadFilter();lpf.type='lowpass';lpf.frequency.value=400;osc.connect(lpf);lpf.connect(env);env.connect(output);osc.start(time);osc.stop(time+beatSec);currentNodes.push(osc,env,lpf);}let nextBeat=ac.currentTime+0.1;function scheduler(){while(nextBeat<ac.currentTime+0.3){schedBeat(nextBeat);nextBeat+=beatSec*(rng()>0.7?2:1)}}const tid=setInterval(scheduler,100);currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});}
+  function makeMelody(rootHz,scale,bpm,output,rng){const ac=ensureCtx(),beatSec=60/bpm;const pattern=Array.from({length:16},(_,i)=>{if(rng()<0.3)return null;const step=scale[Math.floor(rng()*scale.length)];const octave=rng()>0.7?12:0;return step+octave});let step=0;function schedNote(time){const note=pattern[step%pattern.length];step++;if(note===null)return;const freq=rootHz*Math.pow(2,note/12);const osc=ac.createOscillator();osc.type=['sine','triangle','sine'][Math.floor(rng()*3)];osc.frequency.setValueAtTime(freq,time);const vibLfo=ac.createOscillator();vibLfo.frequency.value=4.5+rng()*2;const vibGain=ac.createGain();vibGain.gain.value=freq*0.005;vibLfo.connect(vibGain);vibGain.connect(osc.frequency);vibLfo.start(time);const env=ac.createGain(),dur=beatSec*0.5;env.gain.setValueAtTime(0,time);env.gain.linearRampToValueAtTime(0.22,time+0.03);env.gain.exponentialRampToValueAtTime(0.001,time+dur);osc.connect(env);env.connect(output);osc.start(time);osc.stop(time+dur+0.05);vibLfo.stop(time+dur+0.05);currentNodes.push(osc,vibLfo,vibGain,env);}const stepSec=beatSec*0.5;let nextStep=ac.currentTime+0.1;function scheduler(){while(nextStep<ac.currentTime+0.4){schedNote(nextStep);nextStep+=stepSec}}const tid=setInterval(scheduler,100);currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});}
+  function makePad(rootHz,scale,bpm,output,rng){const ac=ensureCtx(),chordDur=(60/bpm)*4;const chordSteps=[[0,scale[2]||3,scale[4]||7],[scale[1]||2,scale[3]||5,scale[5]||9],[scale[2]||3,scale[4]||7,scale[6]||11],[0,scale[2]||3,scale[4]||7]];let chordIdx=Math.floor(rng()*chordSteps.length);function schedChord(time){const steps=chordSteps[chordIdx%chordSteps.length];chordIdx++;steps.forEach(step=>{const osc=ac.createOscillator();osc.type='sine';osc.frequency.value=rootHz*Math.pow(2,step/12);const env=ac.createGain();env.gain.setValueAtTime(0,time);env.gain.linearRampToValueAtTime(0.07,time+0.4);env.gain.setValueAtTime(0.07,time+chordDur-0.5);env.gain.linearRampToValueAtTime(0,time+chordDur);osc.connect(env);env.connect(output);osc.start(time);osc.stop(time+chordDur+0.1);currentNodes.push(osc,env);});}let nextChord=ac.currentTime+0.05;function scheduler(){while(nextChord<ac.currentTime+0.5){schedChord(nextChord);nextChord+=chordDur}}const tid=setInterval(scheduler,200);currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});}
+  function makeDrums(bpm,output,rng){const ac=ensureCtx(),beatSec=60/bpm;function makeKick(time){const osc=ac.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(160,time);osc.frequency.exponentialRampToValueAtTime(40,time+0.15);const env=ac.createGain();env.gain.setValueAtTime(0.35,time);env.gain.exponentialRampToValueAtTime(0.001,time+0.18);osc.connect(env);env.connect(output);osc.start(time);osc.stop(time+0.2);currentNodes.push(osc,env);}function makeHat(time,loud=false){const bufSize=Math.floor(ac.sampleRate*0.06),buf=ac.createBuffer(1,bufSize,ac.sampleRate),d=buf.getChannelData(0);for(let i=0;i<bufSize;i++)d[i]=(Math.random()-0.5)*2;const src=ac.createBufferSource();src.buffer=buf;const hpf=ac.createBiquadFilter();hpf.type='highpass';hpf.frequency.value=7000;const env=ac.createGain();env.gain.setValueAtTime(loud?0.12:0.06,time);env.gain.exponentialRampToValueAtTime(0.001,time+0.05);src.connect(hpf);hpf.connect(env);env.connect(output);src.start(time);src.stop(time+0.07);currentNodes.push(src,hpf,env);}let beat=0,nextTime=ac.currentTime+0.1;function scheduler(){while(nextTime<ac.currentTime+0.35){const b=beat%8;if(b===0||b===4)makeKick(nextTime);if(rng()>0.2)makeHat(nextTime,b%2===0);nextTime+=beatSec*0.5;beat++;}}const tid=setInterval(scheduler,100);currentNodes.push({stop:()=>clearInterval(tid),disconnect:()=>{}});}
+  function startVisualizer(cb){if(!analyser)return;const data=new Uint8Array(analyser.frequencyBinCount);vizCallback=cb;function loop(){animFrame=requestAnimationFrame(loop);analyser.getByteFrequencyData(data);if(vizCallback)vizCallback(data)}loop();}
+  function playCat(catId,onVizUpdate){stopAll();ensureCtx();const rng=seededRand(hashStr(catId));const ROOTS=[261.63,293.66,311.13,329.63,349.23,392.00,415.30,440.00];const rootHz=ROOTS[Math.floor(rng()*ROOTS.length)];const scaleName=SCALE_NAMES[Math.floor(rng()*SCALE_NAMES.length)];const scale=SCALES[scaleName];const bpm=70+Math.floor(rng()*25);const chain=makeLofiChain(masterGain);makePad(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'pad')));makeBass(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'bass')));makeMelody(rootHz,scale,bpm,chain,seededRand(hashStr(catId+'mel')));makeDrums(bpm,chain,seededRand(hashStr(catId+'drum')));makeVinylNoise(chain,seededRand(hashStr(catId+'noise')));const ADJECTIVES=['Сонный','Мурлычащий','Ночной','Тёплый','Пушистый','Ленивый','Уютный','Мечтательный'];const NOUNS=['кот FM','lofi beats','purr radio','мяу tape','нян-нян wave','котовасия'];const rng2=seededRand(hashStr(catId+'name'));const trackName=ADJECTIVES[Math.floor(rng2()*ADJECTIVES.length)]+' '+NOUNS[Math.floor(rng2()*NOUNS.length)];if(onVizUpdate)startVisualizer(onVizUpdate);return{trackName,bpm,scale:scaleName};}
+  function suspendAudio(){if(ctx&&ctx.state==='running')ctx.suspend()}
+  function resumeAudio(){if(ctx&&ctx.state==='suspended')ctx.resume()}
   function setMute(val){muted=val;if(masterGain)masterGain.gain.setTargetAtTime(muted?0:0.55,ensureCtx().currentTime,0.05)}
   function getMuted(){return muted}
   function stop(){stopAll();cancelAnimationFrame(animFrame)}
-
   return{playCat,suspendAudio,resumeAudio,setMute,getMuted,stop};
 })();
 
-// ════ ПРОФИЛЬ ════
+// ========== ПРОФИЛЬ ==========
 let userProfile = { nick: 'Котолюб_9000', emoji: '😺' };
 const savedProfile = localStorage.getItem('userProfile');
 if (savedProfile) userProfile = JSON.parse(savedProfile);
+function saveProfile() { localStorage.setItem('userProfile', JSON.stringify(userProfile)); }
 
-function saveProfile() {
-  localStorage.setItem('userProfile', JSON.stringify(userProfile));
+// ========== БАНЫ ==========
+let bannedUsers = [];
+const storedBanned = localStorage.getItem('bannedUsers');
+if (storedBanned) bannedUsers = JSON.parse(storedBanned);
+function saveBanned() { localStorage.setItem('bannedUsers', JSON.stringify(bannedUsers)); }
+
+function banUser(nick) {
+  if (!nick || nick.trim() === '') return;
+  if (nick === userProfile.nick) { toast(t('selfBan'), true); return; }
+  if (bannedUsers.includes(nick)) { toast('Уже забанен'); return; }
+  bannedUsers.push(nick);
+  saveBanned();
+  // Удаляем все коты этого пользователя
+  const toRemove = allCats.filter(c => c.owner === nick);
+  toRemove.forEach(cat => {
+    const idx = allCats.findIndex(c => c.id === cat.id);
+    if (idx !== -1) allCats.splice(idx,1);
+    const myIdx = myCats.findIndex(c => c.id === cat.id);
+    if (myIdx !== -1) myCats.splice(myIdx,1);
+  });
+  save();
+  toast(`🔨 ${nick} ${t('userBanned')}`);
+  if (screen === 'feed') renderFeed();
+  else if (screen === 'profile') renderProfile();
 }
 
-// ════ БОТЫ ════
-const BOT_NAMES = ['Мурзик', 'Барсик', 'Снежок', 'Рыжик', 'Пушок', 'Кекс', 'Феликс', 'Том', 'Симба', 'Персик'];
-const BOT_EMOJIS = ['😸', '😻', '😽', '😼', '🙀', '😿', '😾', '😺'];
-const BOT_MESSAGES = ['Мяу! 🐱', 'Красиво! 😻', 'Обожаю! ❤️', 'Мур-мур! 🎵', 'Супер! 💣', 'Спасибо! 🙏'];
-
-function generateBotComments(count = 2) {
-  const comments = [];
-  for(let i = 0; i < count; i++) {
-    comments.push({
-      text: BOT_MESSAGES[Math.floor(Math.random() * BOT_MESSAGES.length)],
-      author: BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)] + '_bot',
-      emoji: BOT_EMOJIS[Math.floor(Math.random() * BOT_EMOJIS.length)],
-      time: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
-      isBot: true
-    });
-  }
-  return comments;
+function unbanUser(nick) {
+  if (!nick || nick.trim() === '') return;
+  const idx = bannedUsers.indexOf(nick);
+  if (idx !== -1) bannedUsers.splice(idx,1);
+  saveBanned();
+  toast(`🔓 ${nick} ${t('userUnbanned')}`);
+  if (screen === 'profile') renderProfile();
 }
 
-// ════ КОММЕНТАРИИ ════
+// ========== КОММЕНТАРИИ ==========
 const CommentsEngine = (() => {
   let commentData = {};
-
-  function getComments(catId) {
-    if (!commentData[catId]) {
-      commentData[catId] = generateBotComments(2);
-    }
-    return commentData[catId];
-  }
-
-  function addComment(catId, text) {
-    if (!catId || !text.trim()) return null;
-    if (!commentData[catId]) commentData[catId] = [];
-    
-    const now = new Date();
-    const comment = {
-      text: text.trim(),
-      author: userProfile.nick,
-      emoji: userProfile.emoji,
-      time: now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
-      isBot: false
-    };
-    commentData[catId].push(comment);
-    
-    if (Math.random() > 0.4) {
-      setTimeout(() => {
-        const botComment = generateBotComments(1)[0];
-        if(commentData[catId]) commentData[catId].push(botComment);
-      }, 1000);
-    }
-    
-    return comment;
-  }
-
+  function getComments(catId) { if (!commentData[catId]) commentData[catId] = []; return commentData[catId]; }
+  function addComment(catId, text) { if (!catId || !text.trim()) return null; if (!commentData[catId]) commentData[catId] = []; const now = new Date(); const comment = { text: text.trim(), author: userProfile.nick, emoji: userProfile.emoji, time: now.toLocaleTimeString(lang === 'ru' ? 'ru' : 'en', { hour: '2-digit', minute: '2-digit' }), isBot: false }; commentData[catId].push(comment); return comment; }
   return { getComments, addComment };
 })();
 
-function openComments(cat) {
-  const overlay = document.getElementById('commentsOverlay');
-  const list = document.getElementById('commentsList');
-  const inp = document.getElementById('commentInp');
+// ========== ДАННЫЕ ==========
+let allCats = [], myCats = [];
+let screen = 'feed';
+let loading = false, cooldown = false;
+let currentCatId = null;
+let isPaused = false;
+const vidObs = new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.play().catch(()=>{}); else e.target.pause(); }); },{threshold:0.55});
+let reelObs = null;
 
-  overlay.classList.add('open');
+function load(){ try{ return JSON.parse(localStorage.getItem('kotoreels_v10')) || { liked: [], my: [] }; } catch{ return { liked: [], my: [] }; } }
+function save(){ try{ localStorage.setItem('kotoreels_v10', JSON.stringify({ liked: allCats.filter(c=>c.liked).map(c=>c.id), my: myCats.filter(c=>!c.url.startsWith('blob:')) })); } catch{} }
 
-  function renderComments() {
-    const comments = CommentsEngine.getComments(cat.id);
-    
-    list.innerHTML = '';
-    if (comments.length === 0) {
-      list.innerHTML = `<div class="comments-empty"><div style="font-size:3rem">🐱</div></div>`;
-      return;
-    }
-    
-    comments.forEach(cmt => {
-      const item = document.createElement('div');
-      item.className = 'comment-item';
-      item.innerHTML = `<div class="comment-ava">${cmt.emoji}</div><div class="comment-body"><div><span class="comment-name">${esc(cmt.author)}</span>${getVerifiedBadge(cmt.author)}<span class="comment-time">${cmt.time}</span></div><div class="comment-text">${esc(cmt.text)}</div></div>`;
-      list.appendChild(item);
-    });
-    list.scrollTop = list.scrollHeight;
-  }
+const stored = load();
+if (stored.my && stored.my.length) myCats = stored.my.slice();
 
-  renderComments();
-  inp.focus();
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+function getVerifiedBadge(nick) { if(nick === 'daiilbv') return '<span class="verified-badge"><span class="badge-check user">✓</span><span class="badge-check creator">✓</span></span>'; return ''; }
+function plural(n){ const m10=n%10,m100=n%100; if(m10===1&&m100!==11) return `${n} кот`; if([2,3,4].includes(m10)&&![12,13,14].includes(m100)) return `${n} кота`; return `${n} котов`; }
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function toast(msg,err=false){ const t=document.createElement('div'); t.className='toast'+(err?' err':''); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2700); }
+function updateCounters(){ const txt=plural(allCats.length); if($('topCounter')) $('topCounter').textContent=txt; if($('sideCounter')) $('sideCounter').textContent=txt; }
 
-  function sendComment() {
-    const text = inp.value.trim();
-    if (!text) return;
-    CommentsEngine.addComment(cat.id, text);
-    inp.value = '';
-    setTimeout(() => renderComments(), 100);
-  }
-
-  document.getElementById('commentSendBtn').onclick = sendComment;
-  inp.onkeydown = (e) => { if (e.key === 'Enter') sendComment(); };
-}
-
-document.getElementById('commentsClose').addEventListener('click', () => {
-  document.getElementById('commentsOverlay').classList.remove('open');
-});
-
-// ════ НАСТРОЙКИ ════
-function openSettings() {
-  const overlay = document.getElementById('settingsOverlay');
-  const content = document.getElementById('settingsContent');
-  
-  content.innerHTML = `
-    <div class="settings-section">
-      <div class="settings-section-title">${t('theme')}</div>
-      <div class="settings-item">
-        <span class="settings-label">${t('themeLabel')}</span>
-        <select class="settings-select" id="themeSelect">
-          <option value="dark-mode" ${theme === 'dark-mode' ? 'selected' : ''}>${t('dark')}</option>
-          <option value="light-mode" ${theme === 'light-mode' ? 'selected' : ''}>${t('light')}</option>
-          <option value="neon-mode" ${theme === 'neon-mode' ? 'selected' : ''}>${t('neon')}</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="settings-section">
-      <div class="settings-section-title">${t('language')}</div>
-      <div class="settings-item">
-        <span class="settings-label">${t('langLabel')}</span>
-        <select class="settings-select" id="langSelect">
-          <option value="ru" ${lang === 'ru' ? 'selected' : ''}>${t('russian')}</option>
-          <option value="en" ${lang === 'en' ? 'selected' : ''}>${t('english')}</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="settings-section">
-      <div class="settings-section-title">${t('offline')}</div>
-      <button class="settings-button" id="downloadBtn">${t('download')}</button>
-      <p style="font-size:.75rem; color:var(--dim); margin-top:8px">${t('downloadDesc')}</p>
-      <div class="download-progress" id="downloadProgress" style="display:none">
-        <div class="download-progress-bar" id="downloadProgressBar"></div>
-      </div>
-    </div>
-  `;
-  
-  overlay.classList.add('open');
-  
-  document.getElementById('themeSelect').addEventListener('change', (e) => {
-    theme = e.target.value;
-    localStorage.setItem('theme', theme);
-    document.documentElement.className = theme;
-    toast('✨');
-  });
-  
-  document.getElementById('langSelect').addEventListener('change', (e) => {
-    lang = e.target.value;
-    localStorage.setItem('lang', lang);
-    applyTranslations();
-    openSettings();
-    toast('🌍');
-  });
-  
-  document.getElementById('downloadBtn').addEventListener('click', downloadCats);
-}
-
-function closeSettings() {
-  document.getElementById('settingsOverlay').classList.remove('open');
-}
-
-document.getElementById('settingsClose').addEventListener('click', closeSettings);
-
-// ════ СКАЧИВАНИЕ ════
-async function downloadCats() {
-  const btn = document.getElementById('downloadBtn');
-  const progress = document.getElementById('downloadProgress');
-  const progressBar = document.getElementById('downloadProgressBar');
-  
-  btn.disabled = true;
-  btn.textContent = t('downloading');
-  progress.style.display = 'block';
-  progressBar.style.width = '0%';
-
-  try {
-    const catsToDownload = [];
-    const API_IMG = 'https://api.thecatapi.com/v1/images/search?mime_types=jpg,png&limit=20&order=RANDOM';
-    
-    for (let i = 0; i < 10; i++) {
-      const response = await fetch(API_IMG + '&_=' + Date.now());
-      if (!response.ok) throw new Error('Network error');
-      const data = await response.json();
-      catsToDownload.push(...data);
-      progressBar.style.width = ((i + 1) * 10) + '%';
-      await new Promise(r => setTimeout(r, 200));
-    }
-
-    const dataStr = JSON.stringify(catsToDownload, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'kotoreels_200_cats.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    progressBar.style.width = '100%';
-    await new Promise(r => setTimeout(r, 500));
-    progress.style.display = 'none';
-    btn.textContent = t('download');
-    btn.disabled = false;
-    toast('💾');
-  } catch (e) {
-    progress.style.display = 'none';
-    btn.textContent = t('download');
-    btn.disabled = false;
-    toast('❌');
-  }
-}
-
-// ════ РЕДАКТИРОВАНИЕ ════
-function openProfileEdit() {
-  const overlay = document.getElementById('profileEditOverlay');
-  const nickInput = document.getElementById('profileNick');
-  nickInput.value = userProfile.nick;
-  
-  const emojiPicker = document.getElementById('emojiPicker');
-  emojiPicker.innerHTML = '';
-  const allEmojis = ['😺', '😸', '😻', '😽', '😼', '🙀', '😿', '😾', '🐱', '🐈'];
-  allEmojis.forEach(emoji => {
-    const btn = document.createElement('button');
-    btn.className = 'emoji-btn' + (emoji === userProfile.emoji ? ' active' : '');
-    btn.textContent = emoji;
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      userProfile.emoji = emoji;
-    });
-    emojiPicker.appendChild(btn);
-  });
-  
-  // Событие для показа подсказки при вводе daiilbv
-  nickInput.addEventListener('input', () => {
-    const inputValue = nickInput.value;
-    let hint = document.querySelector('.nick-hint');
-    
-    if(inputValue === 'daiilbv') {
-      if(!hint) {
-        hint = document.createElement('div');
-        hint.className = 'nick-hint';
-        hint.style.cssText = 'font-size:.75rem;color:var(--accent);margin-top:6px;padding:8px;background:rgba(184,127,255,.15);border-radius:8px;border-left:3px solid var(--accent)';
-        hint.textContent = '🔑 Введи пароль после нажатия "Сохранить"';
-        nickInput.parentElement.appendChild(hint);
-      }
-    } else {
-      if(hint) hint.remove();
-    }
-  });
-  
-  document.getElementById('profileSaveBtn').addEventListener('click', () => {
-    const newNick = nickInput.value || 'Котолюб';
-    
-    // Проверка пароля для ника daiilbv
-    if(newNick === 'daiilbv') {
-      const password = prompt('🔐 Введи пароль для этого ника:');
-      if(password === 'daniil2016') {
-        userProfile.nick = newNick;
-        saveProfile();
-        document.getElementById('profileEditOverlay').classList.remove('open');
-        toast('✅ Добро пожаловать, создатель! 👑');
-        
-        // Обновляем интерфейс без перезагрузки
-        updateProfileDisplay();
-        refreshCurrentComments();
-      } else if(password !== null) {
-        toast('❌ Неверный пароль!', true);
-      }
-    } else {
-      userProfile.nick = newNick;
-      saveProfile();
-      document.getElementById('profileEditOverlay').classList.remove('open');
-      toast('😺 Сохранено!');
-      
-      // Обновляем интерфейс без перезагрузки
-      updateProfileDisplay();
-      refreshCurrentComments();
-    }
-  }, { once: true });
-  
-  overlay.classList.add('open');
-}
-
-function updateProfileDisplay() {
-  if(screen === 'profile') {
-    renderProfile();
-  }
-}
-
-function refreshCurrentComments() {
-  const commentsList = document.getElementById('commentsList');
-  if(commentsList && document.getElementById('commentsOverlay').classList.contains('open')) {
-    const comments = CommentsEngine.getComments(currentCatId);
-    commentsList.innerHTML = '';
-    if (comments.length === 0) {
-      commentsList.innerHTML = `<div class="comments-empty"><div style="font-size:3rem">🐱</div></div>`;
-      return;
-    }
-    comments.forEach(cmt => {
-      const item = document.createElement('div');
-      item.className = 'comment-item';
-      item.innerHTML = `<div class="comment-ava">${cmt.emoji}</div><div class="comment-body"><div><span class="comment-name">${esc(cmt.author)}</span>${getVerifiedBadge(cmt.author)}<span class="comment-time">${cmt.time}</span></div><div class="comment-text">${esc(cmt.text)}</div></div>`;
-      commentsList.appendChild(item);
-    });
-    commentsList.scrollTop = commentsList.scrollHeight;
-  }
-}
-
-document.getElementById('profileEditClose').addEventListener('click', () => {
-  document.getElementById('profileEditOverlay').classList.remove('open');
-});
-
-// ════ ОСНОВНОЙ КОД ════
 const API_IMG='https://api.thecatapi.com/v1/images/search?mime_types=jpg,png,gif&limit=13';
 const API_VID='https://api.thecatapi.com/v1/images/search?mime_types=mp4&limit=4';
-const NAMES=['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
+const NAMES_RU=['Мурзик','Барсик','Снежок','Рыжик','Пушок','Кекс','Феликс','Том','Леопольд','Симба','Персик','Бублик'];
+const NAMES_EN=['Murk','Barsik','Snowball','Ginger','Fluffy','Cake','Felix','Tom','Leopold','Simba','Peach','Bagel'];
+const getNAMES=()=>lang==='ru'?NAMES_RU:NAMES_EN;
+const CAPTIONS_RU=['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? 👁️'];
+const CAPTIONS_EN=['Guarding sofa 🛡️','Thinking deep 🤔','Waiting for food ⏳','It\'s all lost 😿','Just chilling 😴','Who am I? 👁️'];
+const getCAPTIONS=()=>lang==='ru'?CAPTIONS_RU:CAPTIONS_EN;
 const AVATARS=['🐈','😸','😻','😽','😼','🙀','😿','😾'];
-const CAPTIONS=['Охраняю диван 🛡️','Философствую 🤔','Жду еду ⏳','Шеф, всё пропало 😿','Просто лежу 😴','Кто я? 👁️'];
-
-let allCats=[],myCats=[];
-let screen='feed';
-let loading=false,cooldown=false;
-let currentCatId=null;
-let isPaused=false;
-
-const vidObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting) {
-      e.target.play().catch(()=>{});
-    } else {
-      e.target.pause();
-    }
-  });
-},{threshold:0.55});
-
-let reelObs=null;
-
-function load(){try{return JSON.parse(localStorage.getItem('kotoreels_v10'))||{liked:[],my:[]}}catch{return{liked:[],my:[]}}}
-function save(){
-  try{localStorage.setItem('kotoreels_v10',JSON.stringify({liked:allCats.filter(c=>c.liked).map(c=>c.id),my:myCats.filter(c=>!c.url.startsWith('blob:'))}))}catch{}
-}
-const stored=load();
-
-const $=id=>document.getElementById(id);
-function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function getVerifiedBadge(nick) {
-  if(nick === 'daiilbv') {
-    return '<span class="verified-badge"><span class="badge-check user">✓</span><span class="badge-check creator">✓</span></span>';
-  }
-  return '';
-}
-function plural(n){const m10=n%10,m100=n%100;if(m10===1&&m100!==11)return`${n} кот`;if([2,3,4].includes(m10)&&![12,13,14].includes(m100))return`${n} кота`;return`${n} котов`}
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function toast(msg,err=false){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2700)}
-function updateCounters(){const txt=plural(allCats.length);$('topCounter').textContent=txt;$('sideCounter').textContent=txt}
 
 async function fetchJ(url,retries=2){
   for(let i=0;i<=retries;i++){
-    try{const r=await fetch(url+'&_='+Date.now());if(!r.ok)throw new Error(r.status);return await r.json()}
-    catch(e){if(i===retries)throw e;await new Promise(r=>setTimeout(r,700*(i+1)))}
+    try{ const r=await fetch(url+'&_='+Date.now()); if(!r.ok) throw new Error(r.status); return await r.json(); }
+    catch(e){ if(i===retries) throw e; await new Promise(r=>setTimeout(r,700*(i+1))); }
   }
 }
-
 function makeShortId(seed) {
   const chars = 'АБВГДЕЖЗИКЛ';
   const nums  = '0123456789';
@@ -903,434 +478,58 @@ function makeShortId(seed) {
   h = h>>>0;
   return 'КОТ-' + chars[h%chars.length] + nums[(h>>4)%10] + chars[(h>>8)%chars.length] + nums[(h>>12)%10];
 }
-
 function tocat(item,idx){
   const i=allCats.length+idx;
   const rawId=item.id||'c_'+Date.now()+'_'+i;
+  const names = getNAMES();
+  const captions = getCAPTIONS();
   return{
     id: rawId,
     shortId: makeShortId(rawId),
-    name:NAMES[i%NAMES.length]+' '+(i+1),
+    name:names[i%names.length]+' '+(i+1),
     origin:'The Cat API',
     avatar:AVATARS[i%AVATARS.length],
-    desc:rand(CAPTIONS),
+    desc:rand(captions),
     url:item.url,
     type:item.url.endsWith('.mp4')?'video':'image',
     likes:70+Math.floor(Math.random()*200),
     liked:false,
+    owner: '🐱 API'
   };
 }
-
-function makeMedia(cat){
-  const wrap=document.createElement('div'); wrap.className='media-wrap';
-  if(cat.type==='video'){
-    const v=document.createElement('video');
-    v.src=cat.url;
-    v.loop=v.muted=false;
-    v.playsInline=true;
-    v.preload='auto';
-    v.style.width='100%';
-    v.style.height='100%';
-    v.style.objectFit='cover';
-    
-    // Проверяем есть ли звук в видео
-    v.addEventListener('loadedmetadata', () => {
-      wrap.dataset.hasAudio = v.mozHasAudio !== undefined ? v.mozHasAudio : true;
-    });
-    
-    v.onerror=()=>{wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div></div>'};
-    wrap.appendChild(v); 
-    vidObs.observe(v);
-  } else {
-    const img=document.createElement('img');
-    img.src=cat.url;
-    img.style.width='100%';
-    img.style.height='100%';
-    img.style.objectFit='cover';
-    wrap.appendChild(img);
-  }
-  return wrap;
-}
-
-function makeWaveBars(){
-  const wave=document.createElement('div'); wave.className='wave-vis';
-  const bars=[];
-  for(let i=0;i<7;i++){const b=document.createElement('div');b.className='wave-bar';b.style.height='3px';wave.appendChild(b);bars.push(b)}
-  return{el:wave,bars};
-}
-
-function makeReel(cat){
+function makeMedia(cat){ const wrap=document.createElement('div'); wrap.className='media-wrap'; if(cat.type==='video'){ const v=document.createElement('video'); v.src=cat.url; v.loop=v.muted=false; v.playsInline=true; v.preload='auto'; v.style.width='100%'; v.style.height='100%'; v.style.objectFit='cover'; v.addEventListener('loadedmetadata',()=>{ wrap.dataset.hasAudio = v.mozHasAudio !== undefined ? v.mozHasAudio : true; }); v.onerror=()=>{wrap.innerHTML='<div class="media-fallback"><div class="fi">😿</div></div>'}; wrap.appendChild(v); vidObs.observe(v); } else { const img=document.createElement('img'); img.src=cat.url; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; wrap.appendChild(img); } return wrap; }
+function makeWaveBars(){ const wave=document.createElement('div'); wave.className='wave-vis'; const bars=[]; for(let i=0;i<7;i++){const b=document.createElement('div');b.className='wave-bar';b.style.height='3px';wave.appendChild(b);bars.push(b)} return{el:wave,bars}; }
+function makeReel(cat){ 
   const reel=document.createElement('div'); reel.className='reel'; reel.dataset.id=cat.id;
   reel.appendChild(makeMedia(cat));
   const grad=document.createElement('div'); grad.className='grad'; reel.appendChild(grad);
-
-  const idBadge=document.createElement('div'); idBadge.className='cat-short-id';
-  idBadge.textContent=cat.shortId||'КОТ-????';
-  reel.appendChild(idBadge);
-
-  const pauseOvr=document.createElement('div'); pauseOvr.className='pause-overlay';
-  pauseOvr.innerHTML='<div class="pause-icon">⏸️</div>';
-  reel.appendChild(pauseOvr);
-
-  const vizBar=document.createElement('div'); vizBar.className='viz-bar';
-  const vizProg=document.createElement('div'); vizProg.className='viz-progress'; vizBar.appendChild(vizProg);
-  reel.appendChild(vizBar);
-
+  const idBadge=document.createElement('div'); idBadge.className='cat-short-id'; idBadge.textContent=cat.shortId||'КОТ-????'; reel.appendChild(idBadge);
+  const pauseOvr=document.createElement('div'); pauseOvr.className='pause-overlay'; pauseOvr.innerHTML='<div class="pause-icon">⏸️</div>'; reel.appendChild(pauseOvr);
+  const vizBar=document.createElement('div'); vizBar.className='viz-bar'; const vizProg=document.createElement('div'); vizProg.className='viz-progress'; vizBar.appendChild(vizProg); reel.appendChild(vizBar);
   const hb=document.createElement('div'); hb.className='heart-burst'; hb.textContent='❤️'; reel.appendChild(hb);
-
-  const muteBtn=document.createElement('button'); muteBtn.className='mute-btn';
-  muteBtn.textContent=AudioEngine.getMuted()?'🔇':'🔊';
-  muteBtn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const m=!AudioEngine.getMuted();
-    AudioEngine.setMute(m);
-    document.querySelectorAll('.mute-btn').forEach(b=>b.textContent=m?'🔇':'🔊');
-  });
-  reel.appendChild(muteBtn);
-
-  const settingsBtn=document.createElement('button'); settingsBtn.className='settings-btn'; settingsBtn.textContent='⚙️';
-  settingsBtn.addEventListener('click', e => { e.stopPropagation(); openSettings(); });
-  reel.appendChild(settingsBtn);
-
-  const{el:waveEl,bars:waveBars}=makeWaveBars();
-  reel.appendChild(waveEl);
-
-  const tickerWrap=document.createElement('div'); tickerWrap.className='music-ticker-wrap';
-  const ticker=document.createElement('div'); ticker.className='music-ticker';
-  const disc=document.createElement('div'); disc.className='music-disc'; disc.textContent='🎵';
-  const textScroll=document.createElement('div'); textScroll.className='music-text-scroll';
-  const textInner=document.createElement('div'); textInner.className='music-text-inner';
-  textInner.textContent='загружаем трек…';
-  textScroll.appendChild(textInner); ticker.appendChild(disc); ticker.appendChild(textScroll);
-  tickerWrap.appendChild(ticker); reel.appendChild(tickerWrap);
-
-  const side=document.createElement('div'); side.className='reel-side-actions';
-  side.innerHTML=`
-    <div class="reel-side-btn like-side">
-      <div class="reel-side-icon">${cat.liked?'❤️':'🤍'}</div>
-      <div class="reel-side-count">${cat.likes}</div>
-    </div>
-    <div class="reel-side-btn comments-side-btn">
-      <div class="reel-side-icon">💬</div>
-      <div class="reel-side-count">${CommentsEngine.getComments(cat.id).length}</div>
-    </div>
-  `;
-  side.querySelector('.like-side').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)});
-  side.querySelector('.comments-side-btn').addEventListener('click',e=>{e.stopPropagation();openComments(cat)});
-  reel.appendChild(side);
-
-  const footer=document.createElement('div'); footer.className='reel-footer';
-  footer.innerHTML=`
-    <div class="cat-row">
-      <div class="cat-ava">${esc(cat.avatar)}</div>
-      <div>
-        <div class="cat-name">${esc(cat.name)}</div>
-        <div class="cat-origin">${esc(cat.origin)}</div>
-      </div>
-    </div>
-    <div class="reel-bottom-bar">
-      <button class="pill like-pill">
-        <span>${cat.liked?'❤️':'🤍'}</span><span>${cat.likes}</span>
-      </button>
-      <button class="pill comments-pill">💬 ${CommentsEngine.getComments(cat.id).length}</button>
-    </div>
-  `;
-  footer.querySelector('.like-pill').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)});
-  footer.querySelector('.comments-pill').addEventListener('click',e=>{e.stopPropagation();openComments(cat)});
-  reel.appendChild(footer);
-
-  let lastTap=0;
-  reel.addEventListener('click',e=>{
-    if(e.target.closest('.settings-btn,.reel-side-actions,.reel-bottom-bar')) return;
-    const now=Date.now();
-    if(now-lastTap<300){
-      if(!cat.liked) doLike(cat.id,reel);
-      hb.classList.remove('pop'); void hb.offsetWidth; hb.classList.add('pop');
-    } else {
-      if(currentCatId===cat.id){
-        isPaused=!isPaused;
-        if(isPaused){
-          AudioEngine.suspendAudio();
-          disc.classList.remove('playing');
-          pauseOvr.classList.add('show');
-          reel.querySelector('video')?.pause();
-        } else {
-          AudioEngine.resumeAudio();
-          disc.classList.add('playing');
-          pauseOvr.classList.remove('show');
-          reel.querySelector('video')?.play().catch(()=>{});
-        }
-      }
-    }
-    lastTap=now;
-  });
-
-  let progVal=0;
-
-  reel._startMusic=()=>{
-    if(currentCatId===cat.id) return;
-    currentCatId=cat.id;
-    isPaused=false;
-    pauseOvr.classList.remove('show');
-    disc.classList.add('playing');
-
-    const mediaWrap = reel.querySelector('.media-wrap');
-    const hasAudio = mediaWrap?.dataset?.hasAudio !== 'false' && cat.type === 'video';
-    
-    if(hasAudio && cat.type === 'video') {
-      // Останавливаем генерируемый звук и используем оригинальный звук видео
-      AudioEngine.stop();
-      const video = reel.querySelector('video');
-      if(video) {
-        video.muted = false;
-        video.volume = 1;
-        textInner.textContent = '🎬 ' + cat.name + ' • Оригинальный звук';
-        textInner.classList.add('scrolling');
-      }
-    } else {
-      // Генерируем звук как обычно
-      const trackInfo=AudioEngine.playCat(cat.id,(freqData)=>{
-        const bands=[0,1,2,4,6,8,12];
-        bands.forEach((b,i)=>{
-          const v=freqData[b]||0;
-          const h=Math.max(3,(v/255)*26);
-          if(waveBars[i]) waveBars[i].style.height=h+'px';
-        });
-        progVal=(progVal+0.03)%100;
-        vizProg.style.width=progVal+'%';
-      });
-
-      if(trackInfo){
-        const label=`♫ ${trackInfo.trackName} • ${trackInfo.bpm} BPM • ${trackInfo.scale}`;
-        textInner.textContent=label+'   '+label;
-        textInner.classList.add('scrolling');
-      }
-    }
-  };
-
-  reel._stopMusic=()=>{
-    disc.classList.remove('playing');
-    textInner.classList.remove('scrolling');
-    waveBars.forEach(b=>b.style.height='3px');
-    pauseOvr.classList.remove('show');
-    const video = reel.querySelector('video');
-    if(video) video.muted = true;
-  };
-
-  return reel;
+  const muteBtn=document.createElement('button'); muteBtn.className='mute-btn'; muteBtn.textContent=AudioEngine.getMuted()?'🔇':'🔊'; muteBtn.addEventListener('click',e=>{ e.stopPropagation(); const m=!AudioEngine.getMuted(); AudioEngine.setMute(m); document.querySelectorAll('.mute-btn').forEach(b=>b.textContent=m?'🔇':'🔊'); }); reel.appendChild(muteBtn);
+  const settingsBtn=document.createElement('button'); settingsBtn.className='settings-btn'; settingsBtn.textContent='⚙️'; settingsBtn.addEventListener('click', e => { e.stopPropagation(); openSettings(); }); reel.appendChild(settingsBtn);
+  const{el:waveEl,bars:waveBars}=makeWaveBars(); reel.appendChild(waveEl);
+  const tickerWrap=document.createElement('div'); tickerWrap.className='music-ticker-wrap'; const ticker=document.createElement('div'); ticker.className='music-ticker'; const disc=document.createElement('div'); disc.className='music-disc'; disc.textContent='🎵'; const textScroll=document.createElement('div'); textScroll.className='music-text-scroll'; const textInner=document.createElement('div'); textInner.className='music-text-inner'; textInner.textContent='загружаем трек…'; textScroll.appendChild(textInner); ticker.appendChild(disc); ticker.appendChild(textScroll); tickerWrap.appendChild(ticker); reel.appendChild(tickerWrap);
+  const side=document.createElement('div'); side.className='reel-side-actions'; side.innerHTML=`<div class="reel-side-btn like-side"><div class="reel-side-icon">${cat.liked?'❤️':'🤍'}</div><div class="reel-side-count">${cat.likes}</div></div><div class="reel-side-btn comments-side-btn"><div class="reel-side-icon">💬</div><div class="reel-side-count">${CommentsEngine.getComments(cat.id).length}</div></div>`; side.querySelector('.like-side').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)}); side.querySelector('.comments-side-btn').addEventListener('click',e=>{e.stopPropagation();openComments(cat)}); reel.appendChild(side);
+  const footer=document.createElement('div'); footer.className='reel-footer'; footer.innerHTML=`<div class="cat-row"><div class="cat-ava">${esc(cat.avatar)}</div><div><div class="cat-name">${esc(cat.name)}</div><div class="cat-origin">${esc(cat.origin)}</div></div></div><div class="reel-bottom-bar"><button class="pill like-pill"><span>${cat.liked?'❤️':'🤍'}</span><span>${cat.likes}</span></button><button class="pill comments-pill">💬 ${CommentsEngine.getComments(cat.id).length}</button></div>`; footer.querySelector('.like-pill').addEventListener('click',e=>{e.stopPropagation();doLike(cat.id,reel)}); footer.querySelector('.comments-pill').addEventListener('click',e=>{e.stopPropagation();openComments(cat)}); reel.appendChild(footer);
+  let lastTap=0; reel.addEventListener('click',e=>{ if(e.target.closest('.settings-btn,.reel-side-actions,.reel-bottom-bar')) return; const now=Date.now(); if(now-lastTap<300){ if(!cat.liked) doLike(cat.id,reel); hb.classList.remove('pop'); void hb.offsetWidth; hb.classList.add('pop'); } else { if(currentCatId===cat.id){ isPaused=!isPaused; if(isPaused){ AudioEngine.suspendAudio(); disc.classList.remove('playing'); pauseOvr.classList.add('show'); reel.querySelector('video')?.pause(); } else { AudioEngine.resumeAudio(); disc.classList.add('playing'); pauseOvr.classList.remove('show'); reel.querySelector('video')?.play().catch(()=>{}); } } } lastTap=now; });
+  let progVal=0; reel._startMusic=()=>{ if(currentCatId===cat.id) return; currentCatId=cat.id; isPaused=false; pauseOvr.classList.remove('show'); disc.classList.add('playing'); const mediaWrap = reel.querySelector('.media-wrap'); const hasAudio = mediaWrap?.dataset?.hasAudio !== 'false' && cat.type === 'video'; if(hasAudio && cat.type === 'video') { AudioEngine.stop(); const video = reel.querySelector('video'); if(video) { video.muted = false; video.volume = 1; textInner.textContent = '🎬 ' + cat.name + ' • Оригинальный звук'; textInner.classList.add('scrolling'); } } else { const trackInfo=AudioEngine.playCat(cat.id,(freqData)=>{ const bands=[0,1,2,4,6,8,12]; bands.forEach((b,i)=>{ const v=freqData[b]||0; const h=Math.max(3,(v/255)*26); if(waveBars[i]) waveBars[i].style.height=h+'px'; }); progVal=(progVal+0.03)%100; vizProg.style.width=progVal+'%'; }); if(trackInfo){ const label=`♫ ${trackInfo.trackName} • ${trackInfo.bpm} BPM • ${trackInfo.scale}`; textInner.textContent=label+'   '+label; textInner.classList.add('scrolling'); } } }; reel._stopMusic=()=>{ disc.classList.remove('playing'); textInner.classList.remove('scrolling'); waveBars.forEach(b=>b.style.height='3px'); pauseOvr.classList.remove('show'); const video = reel.querySelector('video'); if(video) video.muted = true; }; return reel;
 }
-
-function doLike(id,reel){
-  const cat=allCats.find(c=>c.id===id); if(!cat)return;
-  cat.liked=!cat.liked; cat.likes+=cat.liked?1:-1; save();
-  const pill=reel.querySelector('.like-pill');
-  if(pill){pill.querySelector('span:first-child').textContent=cat.liked?'❤️':'🤍';pill.querySelector('span:last-child').textContent=cat.likes}
-}
-
-function renderFeed(){
-  const area=$('contentArea'); area.innerHTML='';
-  if(reelObs){reelObs.disconnect();reelObs=null}
-  AudioEngine.stop(); currentCatId=null; isPaused=false;
-
-  const feed=document.createElement('div'); feed.className='feed'; feed.id='feed';
-  const reels=[];
-  allCats.forEach(c=>{const r=makeReel(c);reels.push(r);feed.appendChild(r)});
-  area.appendChild(feed);
-  updateCounters();
-
-  reelObs=new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      const r=entry.target;
-      if(entry.isIntersecting&&entry.intersectionRatio>0.6){
-        isPaused=false;
-        r._startMusic&&r._startMusic();
-      } else {
-        if(r.dataset.id===currentCatId){
-          const video = r.querySelector('video');
-          if(video) video.muted = true;
-          r._stopMusic&&r._stopMusic();
-          currentCatId=null;
-        }
-      }
-    });
-  },{threshold:[0.6]});
-
-  reels.forEach(r=>reelObs.observe(r));
-
-  const sentinel=document.createElement('div'); sentinel.style.height='4px'; feed.appendChild(sentinel);
-  new IntersectionObserver(entries=>{
-    if(entries[0].isIntersecting&&!loading&&!cooldown&&screen==='feed') loadMore();
-  },{root:feed,threshold:0.1}).observe(sentinel);
-}
-
-async function loadMore(){
-  if(loading||cooldown||screen!=='feed')return; loading=true;
-  const feed=$('feed'); const sentinel=feed?.lastElementChild;
-  const ls=document.createElement('div'); ls.className='loading-slide'; ls.id='ls';
-  ls.innerHTML='<div class="spinner"></div><span>'+t('loadingCats')+'</span>';
-  if(feed&&sentinel)feed.insertBefore(ls,sentinel);
-  try{
-    // Загружаем 13 картинок (включая гифки) и 4 видео
-    const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG,1),fetchJ(API_VID,1)]);
-    let raw=[]; 
-    if(ir.status==='fulfilled')raw.push(...ir.value); 
-    if(vr.status==='fulfilled')raw.push(...vr.value);
-    if(!raw.length){cooldown=true;toast('❌');setTimeout(()=>cooldown=false,10000)}
-    else{
-      const cats=raw.map((x,i)=>tocat(x,i)); 
-      allCats.push(...cats);
-      if(feed&&sentinel)cats.forEach(c=>{const r=makeReel(c);reelObs?.observe(r);feed.insertBefore(r,ls)});
-      updateCounters(); toast(`➕ ${cats.length}`);
-    }
-  }catch{toast('❌');cooldown=true;setTimeout(()=>cooldown=false,10000)}
-  finally{$('ls')?.remove();loading=false}
-}
-
-async function init(){
-  document.documentElement.className = theme;
-  loading=true; toast(t('loading'));
-  try{
-    // Загружаем 13 картинок (jpg, png, gif) и 4 видео при инициализации
-    const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG),fetchJ(API_VID)]);
-    let raw=[];
-    if(ir.status==='fulfilled')raw.push(...ir.value);
-    if(vr.status==='fulfilled')raw.push(...vr.value);
-    if(raw.length)allCats.push(...raw.map((x,i)=>tocat(x,i)));
-    else allCats.push({id:'fb',shortId:makeShortId('fb'),name:'Котик',origin:'резерв',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
-  }catch{
-    allCats.push({id:'fb',shortId:makeShortId('fb'),name:'Котик',origin:'офлайн',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false});
-  }finally{loading=false}
-
-  if(stored.liked)allCats.forEach(c=>{if(stored.liked.includes(c.id))c.liked=true});
-  renderFeed();
-  applyTranslations();
-}
-
-function renderProfile(){
-  const area=$('contentArea'); area.innerHTML='';
-  if(reelObs){reelObs.disconnect();reelObs=null}
-  AudioEngine.stop(); currentCatId=null; isPaused=false;
-  const liked=allCats.filter(c=>c.liked).length;
-  const wrap=document.createElement('div'); wrap.className='profile-wrap';
-  wrap.innerHTML=`
-    <div class="profile-hero">
-      <div class="profile-hero-actions">
-        <button class="profile-hero-btn" id="editProfileBtn">✏️</button>
-        <button class="profile-hero-btn" id="settingsBtn2">⚙️</button>
-      </div>
-      <div class="profile-top">
-        <div class="profile-ava">${userProfile.emoji}</div>
-        <div class="profile-stats">
-          <div class="p-stat"><div class="p-stat-n">${myCats.length}</div><div class="p-stat-l" id="stat1">мои</div></div>
-          <div class="p-stat"><div class="p-stat-n">${liked}</div><div class="p-stat-l" id="stat2">лайки</div></div>
-          <div class="p-stat"><div class="p-stat-n">${allCats.length}</div><div class="p-stat-l" id="stat3">всего</div></div>
-        </div>
-      </div>
-      <div class="profile-name">${esc(userProfile.nick)}${getVerifiedBadge(userProfile.nick)}</div>
-      <div class="profile-bio">Обожаю котиков 😺 · Добавляй своих!</div>
-    </div>
-    <div class="p-tabs">
-      <div class="p-tab active" data-tab="my">📦 мои</div>
-      <div class="p-tab" data-tab="liked">❤️ лайкнутые</div>
-    </div>
-    <div class="p-grid" id="pgrid"></div>
-  `;
-  area.appendChild(wrap);
-  applyTranslations();
-
-  wrap.querySelector('#editProfileBtn').addEventListener('click', openProfileEdit);
-  wrap.querySelector('#settingsBtn2').addEventListener('click', openSettings);
-
-  let activeTab='my';
-  const grid=wrap.querySelector('#pgrid');
-  const tabs=wrap.querySelectorAll('.p-tab');
-  function renderGrid(tab){
-    grid.innerHTML='';
-    const items=tab==='my'?myCats:allCats.filter(c=>c.liked);
-    if(!items.length){grid.innerHTML='<div class="p-empty">😿 пусто</div>';return}
-    items.forEach(cat=>{
-      const cell=document.createElement('div'); cell.className='p-cell';
-      if(cat.type==='video'){
-        const v=document.createElement('video'); v.src=cat.url; v.preload='metadata'; v.muted=true;
-        cell.appendChild(v);
-      } else {
-        const img=document.createElement('img'); 
-        img.src=cat.url;
-        cell.appendChild(img);
-      }
-      grid.appendChild(cell);
-    });
-  }
-  tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');activeTab=t.dataset.tab;renderGrid(activeTab)}));
-  renderGrid('my');
-}
-
-function setScreen(s){
-  screen=s;
-  document.querySelectorAll('[data-screen]').forEach(el=>el.classList.toggle('active',el.dataset.screen===s));
-  if(s==='feed')renderFeed();
-  else renderProfile();
-}
+function doLike(id,reel){ const cat=allCats.find(c=>c.id===id); if(!cat)return; cat.liked=!cat.liked; cat.likes+=cat.liked?1:-1; save(); const pill=reel.querySelector('.like-pill'); if(pill){pill.querySelector('span:first-child').textContent=cat.liked?'❤️':'🤍';pill.querySelector('span:last-child').textContent=cat.likes} }
+function openComments(cat){ const overlay = document.getElementById('commentsOverlay'); const list = document.getElementById('commentsList'); const inp = document.getElementById('commentInp'); overlay.classList.add('open'); function renderComments() { const comments = CommentsEngine.getComments(cat.id); list.innerHTML = ''; if (comments.length === 0) { list.innerHTML = '<div class="comments-empty"><div style="font-size:3rem">🐱</div></div>'; return; } comments.forEach(cmt => { const item = document.createElement('div'); item.className = 'comment-item'; item.innerHTML = `<div class="comment-ava">${cmt.emoji}</div><div class="comment-body"><div><span class="comment-name">${esc(cmt.author)}</span>${getVerifiedBadge(cmt.author)}<span class="comment-time">${cmt.time}</span></div><div class="comment-text">${esc(cmt.text)}</div></div>`; list.appendChild(item); }); list.scrollTop = list.scrollHeight; } renderComments(); inp.focus(); function sendComment() { const text = inp.value.trim(); if (!text) return; CommentsEngine.addComment(cat.id, text); inp.value = ''; setTimeout(() => renderComments(), 100); } document.getElementById('commentSendBtn').onclick = sendComment; inp.onkeydown = (e) => { if (e.key === 'Enter') sendComment(); }; } document.getElementById('commentsClose').addEventListener('click', () => { document.getElementById('commentsOverlay').classList.remove('open'); });
+function openSettings(){ const overlay = document.getElementById('settingsOverlay'); const content = document.getElementById('settingsContent'); content.innerHTML = `<div class="settings-section"><div class="settings-section-title">${t('theme')}</div><div class="settings-item"><span class="settings-label">${t('themeLabel')}</span><select class="settings-select" id="themeSelect"><option value="dark-mode" ${theme === 'dark-mode' ? 'selected' : ''}>${t('dark')}</option><option value="light-mode" ${theme === 'light-mode' ? 'selected' : ''}>${t('light')}</option><option value="neon-mode" ${theme === 'neon-mode' ? 'selected' : ''}>${t('neon')}</option></select></div></div><div class="settings-section"><div class="settings-section-title">${t('language')}</div><div class="settings-item"><span class="settings-label">${t('langLabel')}</span><select class="settings-select" id="langSelect"><option value="ru" ${lang === 'ru' ? 'selected' : ''}>${t('russian')}</option><option value="en" ${lang === 'en' ? 'selected' : ''}>${t('english')}</option></select></div></div><div class="settings-section"><div class="settings-section-title">${t('offline')}</div><button class="settings-button" id="downloadBtn">${t('download')}</button><p style="font-size:.75rem; color:var(--dim); margin-top:8px">${t('downloadDesc')}</p><div class="download-progress" id="downloadProgress" style="display:none"><div class="download-progress-bar" id="downloadProgressBar"></div></div></div>`; overlay.classList.add('open'); document.getElementById('themeSelect').addEventListener('change', (e) => { theme = e.target.value; localStorage.setItem('theme', theme); document.documentElement.className = theme; toast('✨'); }); document.getElementById('langSelect').addEventListener('change', (e) => { lang = e.target.value; localStorage.setItem('lang', lang); applyTranslations(); if (screen === 'feed') renderFeed(); else if (screen === 'profile') renderProfile(); closeSettings(); toast('🌍'); }); document.getElementById('downloadBtn').addEventListener('click', async () => { const btn = document.getElementById('downloadBtn'); const progress = document.getElementById('downloadProgress'); const progressBar = document.getElementById('downloadProgressBar'); btn.disabled = true; btn.textContent = t('downloading'); progress.style.display = 'block'; progressBar.style.width = '0%'; try { for (let i = 0; i < 10; i++) { const response = await fetch(API_IMG + '&_=' + Date.now()); if (!response.ok) throw new Error('Network error'); const data = await response.json(); await new Promise(r => setTimeout(r, 200)); progressBar.style.width = ((i + 1) * 10) + '%'; } const dataStr = JSON.stringify([], null, 2); const blob = new Blob([dataStr], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'kotoreels_200_cats.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); progressBar.style.width = '100%'; await new Promise(r => setTimeout(r, 500)); progress.style.display = 'none'; btn.textContent = t('download'); btn.disabled = false; toast('💾'); } catch (e) { progress.style.display = 'none'; btn.textContent = t('download'); btn.disabled = false; toast('❌'); } }); } function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); } document.getElementById('settingsClose').addEventListener('click', closeSettings);
+function openProfileEdit(){ const overlay = document.getElementById('profileEditOverlay'); const nickInput = document.getElementById('profileNick'); nickInput.value = userProfile.nick; const emojiPicker = document.getElementById('emojiPicker'); emojiPicker.innerHTML = ''; const allEmojis = ['😺', '😸', '😻', '😽', '😼', '🙀', '😿', '😾', '🐱', '🐈']; allEmojis.forEach(emoji => { const btn = document.createElement('button'); btn.className = 'emoji-btn' + (emoji === userProfile.emoji ? ' active' : ''); btn.textContent = emoji; btn.addEventListener('click', () => { document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); userProfile.emoji = emoji; }); emojiPicker.appendChild(btn); }); document.getElementById('profileSaveBtn').addEventListener('click', () => { const newNick = nickInput.value || 'Котолюб'; if(newNick === 'daiilbv') { const password = prompt('🔐 Введи пароль для этого ника:'); if(password === 'daniil2016') { userProfile.nick = newNick; saveProfile(); document.getElementById('profileEditOverlay').classList.remove('open'); toast('✅ Добро пожаловать, создатель! 👑'); if (screen === 'profile') renderProfile(); } else if(password !== null) { toast('❌ Неверный пароль!', true); } } else { userProfile.nick = newNick; saveProfile(); document.getElementById('profileEditOverlay').classList.remove('open'); toast('😺 Сохранено!'); if (screen === 'profile') renderProfile(); } }, { once: true }); overlay.classList.add('open'); } document.getElementById('profileEditClose').addEventListener('click', () => { document.getElementById('profileEditOverlay').classList.remove('open'); });
+function renderFeed(){ const area=$('contentArea'); area.innerHTML=''; if(reelObs){reelObs.disconnect();reelObs=null} AudioEngine.stop(); currentCatId=null; isPaused=false; const feed=document.createElement('div'); feed.className='feed'; feed.id='feed'; const reels=[]; allCats.forEach(c=>{const r=makeReel(c);reels.push(r);feed.appendChild(r)}); area.appendChild(feed); updateCounters(); reelObs=new IntersectionObserver(entries=>{ entries.forEach(entry=>{ const r=entry.target; if(entry.isIntersecting&&entry.intersectionRatio>0.6){ isPaused=false; r._startMusic&&r._startMusic(); } else { if(r.dataset.id===currentCatId){ const video = r.querySelector('video'); if(video) video.muted = true; r._stopMusic&&r._stopMusic(); currentCatId=null; } } }); },{threshold:[0.6]}); reels.forEach(r=>reelObs.observe(r)); const sentinel=document.createElement('div'); sentinel.style.height='4px'; feed.appendChild(sentinel); new IntersectionObserver(entries=>{ if(entries[0].isIntersecting&&!loading&&!cooldown&&screen==='feed') loadMore(); },{root:feed,threshold:0.1}).observe(sentinel); }
+async function loadMore(){ if(loading||cooldown||screen!=='feed')return; loading=true; const feed=$('feed'); const sentinel=feed?.lastElementChild; const ls=document.createElement('div'); ls.className='loading-slide'; ls.id='ls'; ls.innerHTML='<div class="spinner"></div><span>'+t('loadingCats')+'</span>'; if(feed&&sentinel)feed.insertBefore(ls,sentinel); try{ const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG,1),fetchJ(API_VID,1)]); let raw=[]; if(ir.status==='fulfilled')raw.push(...ir.value); if(vr.status==='fulfilled')raw.push(...vr.value); if(!raw.length){cooldown=true;toast('❌');setTimeout(()=>cooldown=false,10000)} else{ const cats=raw.map((x,i)=>tocat(x,i)); allCats.push(...cats); if(feed&&sentinel)cats.forEach(c=>{const r=makeReel(c);reelObs?.observe(r);feed.insertBefore(r,ls)}); updateCounters(); toast(`➕ ${cats.length}`); } }catch{toast('❌');cooldown=true;setTimeout(()=>cooldown=false,10000)} finally{$('ls')?.remove();loading=false} }
+async function init(){ document.documentElement.className = theme; loading=true; toast(t('loading')); try{ const[ir,vr]=await Promise.allSettled([fetchJ(API_IMG),fetchJ(API_VID)]); let raw=[]; if(ir.status==='fulfilled')raw.push(...ir.value); if(vr.status==='fulfilled')raw.push(...vr.value); if(raw.length)allCats.push(...raw.map((x,i)=>tocat(x,i))); else allCats.push({id:'fb',shortId:makeShortId('fb'),name:'Котик',origin:'резерв',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false,owner:'🐱 API'}); }catch{ allCats.push({id:'fb',shortId:makeShortId('fb'),name:'Котик',origin:'офлайн',avatar:'😿',desc:'',url:'https://cdn2.thecatapi.com/images/9j5.jpg',type:'image',likes:7,liked:false,owner:'🐱 API'}); }finally{loading=false} if(stored.liked)allCats.forEach(c=>{if(stored.liked.includes(c.id))c.liked=true}); if(myCats.length) allCats.unshift(...myCats); renderFeed(); applyTranslations(); }
+function renderProfile(){ const area=$('contentArea'); area.innerHTML=''; if(reelObs){reelObs.disconnect();reelObs=null} AudioEngine.stop(); currentCatId=null; isPaused=false; const liked=allCats.filter(c=>c.liked).length; const wrap=document.createElement('div'); wrap.className='profile-wrap'; wrap.innerHTML=`<div class="profile-hero"><div class="profile-hero-actions"><button class="profile-hero-btn" id="editProfileBtn">✏️</button><button class="profile-hero-btn" id="settingsBtn2">⚙️</button>${userProfile.nick==='daiilbv' ? '<button class="profile-hero-btn" id="banUserBtn">🔨</button><button class="profile-hero-btn" id="unbanUserBtn">🔓</button>' : ''}</div><div class="profile-top"><div class="profile-ava">${userProfile.emoji}</div><div class="profile-stats"><div class="p-stat"><div class="p-stat-n">${myCats.length}</div><div class="p-stat-l" id="stat1">мои</div></div><div class="p-stat"><div class="p-stat-n">${liked}</div><div class="p-stat-l" id="stat2">лайки</div></div><div class="p-stat"><div class="p-stat-n">${allCats.length}</div><div class="p-stat-l" id="stat3">всего</div></div></div></div><div class="profile-name">${esc(userProfile.nick)}${getVerifiedBadge(userProfile.nick)}</div><div class="profile-bio">Обожаю котиков 😺 · Добавляй своих!</div></div><div class="p-tabs"><div class="p-tab active" data-tab="my">📦 мои</div><div class="p-tab" data-tab="liked">❤️ лайкнутые</div></div><div class="p-grid" id="pgrid"></div>`; area.appendChild(wrap); applyTranslations(); wrap.querySelector('#editProfileBtn').addEventListener('click', openProfileEdit); wrap.querySelector('#settingsBtn2').addEventListener('click', openSettings); if(userProfile.nick==='daiilbv'){ wrap.querySelector('#banUserBtn').addEventListener('click',()=>{ const nick = prompt(t('banPrompt')); if(nick) banUser(nick); }); wrap.querySelector('#unbanUserBtn').addEventListener('click',()=>{ const nick = prompt(t('unbanPrompt')); if(nick) unbanUser(nick); }); } let activeTab='my'; const grid=wrap.querySelector('#pgrid'); const tabs=wrap.querySelectorAll('.p-tab'); function renderGrid(tab){ grid.innerHTML=''; const items=tab==='my'?myCats:allCats.filter(c=>c.liked); if(!items.length){grid.innerHTML='<div class="p-empty">😿 пусто</div>';return} items.forEach(cat=>{ const cell=document.createElement('div'); cell.className='p-cell'; if(cat.type==='video'){ const v=document.createElement('video'); v.src=cat.url; v.preload='metadata'; v.muted=true; cell.appendChild(v); } else { const img=document.createElement('img'); img.src=cat.url; cell.appendChild(img); } grid.appendChild(cell); }); } tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');activeTab=t.dataset.tab;renderGrid(activeTab)})); renderGrid('my'); }
+function setScreen(s){ screen=s; document.querySelectorAll('[data-screen]').forEach(el=>el.classList.toggle('active',el.dataset.screen===s)); if(s==='feed')renderFeed(); else renderProfile(); }
 document.querySelectorAll('[data-screen]').forEach(btn=>btn.addEventListener('click',()=>setScreen(btn.dataset.screen)));
-
-function addCat({url,name,origin,avatar,type}){
-  if(!url)return;
-  const rawId='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-  const cat={id:rawId,shortId:makeShortId(rawId),name:name||'Мой кот',origin:origin||'загружен',avatar:avatar||'📱',desc:rand(CAPTIONS),url,type:type||'image',likes:5,liked:false};
-  myCats.push(cat); allCats.unshift(cat); save();
-  if(screen==='feed'){
-    const feed=$('feed');
-    if(feed){feed.prepend(makeReel(cat));feed.scrollTo({top:0,behavior:'smooth'})}
-    else renderFeed();
-  }
-  updateCounters(); toast(`🐱 ${cat.name}`);
-}
-
-function handleUrl(inputId){
-  const el=$(inputId),url=el?.value.trim();
-  if(!url){toast(t('insertLink'),true);return}
-  addCat({url,name:'Кот по ссылке',origin:'URL',avatar:'🔗',type:/\.(mp4|webm|mov)$/i.test(url)?'video':'image'});
-  el.value='';
-}
-
-$('addUrl').addEventListener('click',()=>handleUrl('urlInp'));
-$('urlInp').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('urlInp')});
-$('addFile').addEventListener('click',()=>$('fileInput').click());
-$('sideAdd').addEventListener('click',()=>handleUrl('sideUrl'));
-$('sideUrl').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('sideUrl')});
-$('sideFile').addEventListener('click',()=>$('fileInput').click());
-$('fileInput').addEventListener('change',e=>{
-  const file=e.target.files[0]; if(!file)return;
-  addCat({url:URL.createObjectURL(file),name:file.name.replace(/\.[^.]+$/,'').slice(0,22),origin:'с устройства',avatar:'📲',type:file.type.startsWith('video')?'video':'image'});
-  e.target.value='';
-});
-
-function doSearch(fromSide) {
-  const inpId = fromSide ? 'sideSearchInp' : 'searchInp';
-  const q = ($(inpId).value||'').trim().toUpperCase().replace(/[^А-ЯA-Z0-9-]/g,'');
-  if(!q) return;
-  const found = allCats.find(c => (c.shortId||'').toUpperCase() === q);
-  if(found) {
-    toast('🐱 ' + found.shortId);
-  } else {
-    toast(t('catNotFound'), true);
-  }
-  $(inpId).value = '';
-}
-
-$('searchGo').addEventListener('click', () => doSearch(false));
-$('searchInp').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(false); });
-if($('sideSearchGo')) {
-  $('sideSearchGo').addEventListener('click', () => doSearch(true));
-  $('sideSearchInp').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(true); });
-}
-
-document.getElementById('shareCloseBtn').addEventListener('click', () => {
-  document.getElementById('shareOverlay').classList.remove('open');
-});
-
-window.addEventListener('beforeunload',save);
-init();
+function addCat({url,name,origin,avatar,type}){ if(!url)return; if(bannedUsers.includes(userProfile.nick)){ toast(t('bannedMsg'),true); return; } const rawId='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); const cat={id:rawId,shortId:makeShortId(rawId),name:name||'Мой кот',origin:origin||'загружен',avatar:avatar||'📱',desc:rand(getCAPTIONS()),url,type:type||'image',likes:5,liked:false,owner:userProfile.nick}; myCats.push(cat); allCats.unshift(cat); save(); if(screen==='feed'){ const feed=$('feed'); if(feed){feed.prepend(makeReel(cat));feed.scrollTo({top:0,behavior:'smooth'})} else renderFeed(); } updateCounters(); toast(`🐱 ${cat.name}`); }
+function handleUrl(inputId){ const el=$(inputId),url=el?.value.trim(); if(!url){toast(t('insertLink'),true);return} addCat({url,name:'Кот по ссылке',origin:'URL',avatar:'🔗',type:/\.(mp4|webm|mov)$/i.test(url)?'video':'image'}); el.value=''; }
+$('addUrl').addEventListener('click',()=>handleUrl('urlInp')); $('urlInp').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('urlInp')}); $('addFile').addEventListener('click',()=>$('fileInput').click()); $('sideAdd').addEventListener('click',()=>handleUrl('sideUrl')); $('sideUrl').addEventListener('keydown',e=>{if(e.key==='Enter')handleUrl('sideUrl')}); $('sideFile').addEventListener('click',()=>$('fileInput').click()); $('fileInput').addEventListener('change',e=>{ const file=e.target.files[0]; if(!file)return; addCat({url:URL.createObjectURL(file),name:file.name.replace(/\.[^.]+$/,'').slice(0,22),origin:'с устройства',avatar:'📲',type:file.type.startsWith('video')?'video':'image'}); e.target.value=''; });
+function doSearch(fromSide) { const inpId = fromSide ? 'sideSearchInp' : 'searchInp'; const q = ($(inpId).value||'').trim().toUpperCase().replace(/[^А-ЯA-Z0-9-]/g,''); if(!q) return; const found = allCats.find(c => (c.shortId||'').toUpperCase() === q); if(found) { toast('🐱 ' + found.shortId); } else { toast(t('catNotFound'), true); } $(inpId).value = ''; } $('searchGo').addEventListener('click', () => doSearch(false)); $('searchInp').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(false); }); if($('sideSearchGo')) { $('sideSearchGo').addEventListener('click', () => doSearch(true)); $('sideSearchInp').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(true); }); } document.getElementById('shareCloseBtn').addEventListener('click', () => { document.getElementById('shareOverlay').classList.remove('open'); }); window.addEventListener('beforeunload',save); init();
 })();
 </script>
 </body>
